@@ -4,8 +4,14 @@
              xmlns:conv="clr-namespace:TaskPilot.Converters"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <conv:PriorityDisplayConverter x:Key="PriorityDisplayConverter" />
-        <conv:TaskOverdueConverter x:Key="TaskOverdueConverter" />
-        <conv:NullOrEmptyToVisibilityConverter x:Key="NullToVisibilityConverter" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/AppTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <conv:PriorityDisplayConverter x:Key="PriorityDisplayConverter" />
+            <conv:TaskOverdueConverter x:Key="TaskOverdueConverter" />
+            <conv:NullOrEmptyToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <conv:ThemeModeDisplayConverter x:Key="ThemeModeDisplayConverter" />
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

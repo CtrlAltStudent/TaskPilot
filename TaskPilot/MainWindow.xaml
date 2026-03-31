@@ -9,12 +9,12 @@
         Width="960"
         MinHeight="420"
         MinWidth="720"
-        Background="#F5F6FA">
+        Background="{DynamicResource AppBackgroundBrush}">
     <DockPanel Margin="16">
         <Border DockPanel.Dock="Top"
                 Padding="12,10"
                 Margin="0,0,0,12"
-                Background="White"
+                Background="{DynamicResource CardBackgroundBrush}"
                 CornerRadius="6">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="12"
@@ -31,33 +31,47 @@
                     <TextBlock Text="TaskPilot"
                                FontSize="22"
                                FontWeight="SemiBold"
-                               Foreground="#1E293B" />
+                               Foreground="{DynamicResource TitleBrush}" />
                     <TextBlock Text="Lista (DataGrid) + formularz edycji • zapis JSON • walidacja tytułu i terminu"
                                FontSize="12"
-                               Foreground="#64748B"
+                               Foreground="{DynamicResource SubtitleBrush}"
                                Margin="0,4,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center"
+                               Margin="0,0,8,0"
+                               Foreground="{DynamicResource SubtitleBrush}"
+                               Text="Motyw:" />
+                    <ComboBox Width="110"
+                              Margin="0,0,8,0"
+                              Padding="6,4"
+                              ItemsSource="{Binding ThemeOptions}"
+                              SelectedItem="{Binding SelectedThemeMode}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource ThemeModeDisplayConverter}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <Button Content="Dodaj zadanie"
+                            Style="{StaticResource TaskPilotButtonStyle}"
                             Command="{Binding AddTaskCommand}"
-                            Padding="14,8"
-                            Margin="0,0,8,0"
                             MinWidth="120" />
                     <Button Content="Usuń"
+                            Style="{StaticResource TaskPilotButtonStyle}"
                             Command="{Binding DeleteTaskCommand}"
-                            Padding="14,8"
-                            Margin="0,0,8,0"
                             MinWidth="88" />
                     <Button Content="Oznacz jako wykonane"
+                            Style="{StaticResource TaskPilotButtonStyle}"
                             Command="{Binding MarkCompleteCommand}"
-                            Padding="14,8"
-                            Margin="0,0,8,0"
                             MinWidth="160" />
                     <Button Content="Zapisz teraz"
+                            Style="{StaticResource TaskPilotButtonStyle}"
                             Command="{Binding SaveNowCommand}"
                             Padding="14,8"
+                            Margin="0"
                             MinWidth="110" />
                 </StackPanel>
             </Grid>
@@ -66,17 +80,17 @@
         <Border DockPanel.Dock="Bottom"
                 Margin="0,12,0,0"
                 Padding="0,8,0,0"
-                BorderBrush="#E2E8F0"
+                BorderBrush="{DynamicResource FooterBorderBrush}"
                 BorderThickness="0,1,0,0">
             <StackPanel>
                 <TextBlock Text="{Binding DetailValidationMessage}"
-                           Foreground="#DC2626"
+                           Foreground="{DynamicResource ErrorBrush}"
                            FontSize="12"
                            TextWrapping="Wrap"
                            Visibility="{Binding DetailValidationMessage, Converter={StaticResource NullToVisibilityConverter}}" />
                 <TextBlock Margin="0,4,0,0"
                            FontSize="11"
-                           Foreground="#64748B"
+                           Foreground="{DynamicResource SubtitleBrush}"
                            TextWrapping="Wrap"
                            Text="{Binding StatusMessage}" />
             </StackPanel>
@@ -90,7 +104,7 @@
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0"
-                    Background="White"
+                    Background="{DynamicResource CardBackgroundBrush}"
                     CornerRadius="6"
                     Padding="12">
                 <Border.Effect>
@@ -104,7 +118,7 @@
                                Text="Lista zadań (DataGrid)"
                                FontWeight="SemiBold"
                                FontSize="14"
-                               Foreground="#334155"
+                               Foreground="{DynamicResource SectionTitleBrush}"
                                Margin="0,0,0,10" />
                     <DataGrid ItemsSource="{Binding Tasks}"
                               SelectedItem="{Binding SelectedTask}"
@@ -121,7 +135,7 @@
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Converter={StaticResource TaskOverdueConverter}}"
                                                  Value="True">
-                                        <Setter Property="Background" Value="#FFFEF2F2" />
+                                        <Setter Property="Background" Value="{DynamicResource OverdueRowBrush}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -155,7 +169,7 @@
             </Border>
 
             <Border Grid.Column="2"
-                    Background="White"
+                    Background="{DynamicResource CardBackgroundBrush}"
                     CornerRadius="6"
                     Padding="16">
                 <Border.Effect>
@@ -173,7 +187,7 @@
                     <TextBlock Text="Szczegóły zadania"
                                FontWeight="SemiBold"
                                FontSize="14"
-                               Foreground="#334155"
+                               Foreground="{DynamicResource SectionTitleBrush}"
                                Margin="0,0,0,12" />
 
                     <ScrollViewer Grid.Row="1"
@@ -196,7 +210,7 @@
                             <TextBlock Text="Tytuł"
                                        VerticalAlignment="Center"
                                        Margin="0,0,12,10"
-                                       Foreground="#475569" />
+                                       Foreground="{DynamicResource LabelBrush}" />
                             <TextBox Grid.Column="1"
                                      Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
                                      Margin="0,0,0,10"
@@ -207,7 +221,7 @@
                                        Text="Opis"
                                        VerticalAlignment="Top"
                                        Margin="0,6,12,0"
-                                       Foreground="#475569" />
+                                       Foreground="{DynamicResource LabelBrush}" />
                             <TextBox Grid.Row="1"
                                      Grid.Column="1"
                                      Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
@@ -222,7 +236,7 @@
                                        Text="Termin"
                                        VerticalAlignment="Center"
                                        Margin="0,0,12,10"
-                                       Foreground="#475569" />
+                                       Foreground="{DynamicResource LabelBrush}" />
                             <DatePicker Grid.Row="2"
                                         Grid.Column="1"
                                         SelectedDate="{Binding DueDate, Mode=TwoWay}"
@@ -232,7 +246,7 @@
                                        Text="Priorytet"
                                        VerticalAlignment="Center"
                                        Margin="0,0,12,10"
-                                       Foreground="#475569" />
+                                       Foreground="{DynamicResource LabelBrush}" />
                             <ComboBox Grid.Row="3"
                                       Grid.Column="1"
                                       ItemsSource="{Binding DataContext.PriorityOptions, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -250,7 +264,7 @@
                                        Text="Status"
                                        VerticalAlignment="Center"
                                        Margin="0,0,12,10"
-                                       Foreground="#475569" />
+                                       Foreground="{DynamicResource LabelBrush}" />
                             <CheckBox Grid.Row="4"
                                       Grid.Column="1"
                                       Content="Wykonane"
@@ -261,12 +275,12 @@
                             <TextBlock Grid.Row="5"
                                        Text="Identyfikator"
                                        VerticalAlignment="Center"
-                                       Foreground="#475569" />
+                                       Foreground="{DynamicResource LabelBrush}" />
                             <TextBlock Grid.Row="5"
                                        Grid.Column="1"
                                        Text="{Binding Id}"
                                        VerticalAlignment="Center"
-                                       Foreground="#94A3B8"
+                                       Foreground="{DynamicResource MutedBrush}"
                                        FontSize="12" />
                         </Grid>
                     </ScrollViewer>

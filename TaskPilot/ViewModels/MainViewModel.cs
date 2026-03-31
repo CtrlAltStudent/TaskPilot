@@ -16,6 +16,7 @@ public sealed class MainViewModel : ObservableObject
     private int _nextId;
     private string _statusMessage = string.Empty;
     private string? _detailValidationMessage;
+    private ThemeMode _selectedThemeMode = ThemeMode.System;
 
     public MainViewModel(ITaskPersistence persistence)
     {
@@ -48,6 +49,7 @@ public sealed class MainViewModel : ObservableObject
     public ObservableCollection<TaskItem> Tasks { get; }
 
     public IReadOnlyList<TaskPriority> PriorityOptions { get; } = Enum.GetValues<TaskPriority>().ToList();
+    public IReadOnlyList<ThemeMode> ThemeOptions { get; } = Enum.GetValues<ThemeMode>().ToList();
 
     public string StatusMessage
     {
@@ -59,6 +61,12 @@ public sealed class MainViewModel : ObservableObject
     {
         get => _detailValidationMessage;
         private set => SetProperty(ref _detailValidationMessage, value);
+    }
+
+    public ThemeMode SelectedThemeMode
+    {
+        get => _selectedThemeMode;
+        set => SetProperty(ref _selectedThemeMode, value);
     }
 
     public TaskItem? SelectedTask

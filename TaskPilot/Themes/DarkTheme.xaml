@@ -1,0 +1,47 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#0F172A" />
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#1E293B" />
+    <SolidColorBrush x:Key="TitleBrush" Color="#F1F5F9" />
+    <SolidColorBrush x:Key="SubtitleBrush" Color="#CBD5E1" />
+    <SolidColorBrush x:Key="SectionTitleBrush" Color="#E2E8F0" />
+    <SolidColorBrush x:Key="LabelBrush" Color="#CBD5E1" />
+    <SolidColorBrush x:Key="MutedBrush" Color="#94A3B8" />
+    <SolidColorBrush x:Key="ErrorBrush" Color="#F87171" />
+    <SolidColorBrush x:Key="FooterBorderBrush" Color="#334155" />
+    <SolidColorBrush x:Key="OverdueRowBrush" Color="#3F1D1D" />
+    <SolidColorBrush x:Key="InputBackgroundBrush" Color="#0F172A" />
+    <SolidColorBrush x:Key="InputForegroundBrush" Color="#E2E8F0" />
+    <SolidColorBrush x:Key="ControlBorderBrush" Color="#475569" />
+
+    <Style x:Key="TaskPilotButtonStyle" TargetType="Button">
+        <Setter Property="Padding" Value="14,8" />
+        <Setter Property="Margin" Value="0,0,8,0" />
+        <Setter Property="MinWidth" Value="88" />
+    </Style>
+
+    <Style TargetType="TextBox">
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource InputForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+    </Style>
+
+    <Style TargetType="ComboBox">
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource InputForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+    </Style>
+
+    <Style TargetType="DatePicker">
+        <Setter Property="Background" Value="{DynamicResource InputBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource InputForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+    </Style>
+
+    <Style TargetType="DataGrid">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource InputForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
+        <Setter Property="RowBackground" Value="{DynamicResource CardBackgroundBrush}" />
+    </Style>
+</ResourceDictionary>
