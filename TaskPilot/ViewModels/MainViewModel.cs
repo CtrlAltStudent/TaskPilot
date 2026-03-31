@@ -199,6 +199,18 @@ public sealed class MainViewModel : ObservableObject
         if (SelectedTask is null)
             return;
 
+        var confirm = MessageBox.Show(
+            $"Czy na pewno chcesz usunąć zadanie:\n\"{SelectedTask.Title}\"?",
+            "TaskPilot — potwierdzenie usunięcia",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            StatusMessage = "Usuwanie anulowane.";
+            return;
+        }
+
         var index = Tasks.IndexOf(SelectedTask);
         var removed = SelectedTask;
         Tasks.Remove(removed);
