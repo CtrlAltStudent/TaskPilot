@@ -21,6 +21,7 @@ public sealed class MainViewModel : ObservableObject
     private ThemeMode _selectedThemeMode = ThemeMode.System;
     private TaskStatusFilter _statusFilter = TaskStatusFilter.All;
     private TaskPriorityFilterOption _priorityFilter = TaskPriorityFilterOption.All;
+    private TaskSortOption _sortOption = TaskSortOption.DueDateAscending;
 
     public MainViewModel(ITaskPersistence persistence)
     {
@@ -40,6 +41,8 @@ public sealed class MainViewModel : ObservableObject
         _tasksViewSource = new CollectionViewSource { Source = Tasks };
         _tasksViewSource.Filter += OnTasksFilter;
         ApplyTaskListFilters();
+        ApplySortDescriptions();
+        EnableLiveSorting();
 
         AddTaskCommand = new RelayCommand(AddTask);
         DeleteTaskCommand = new RelayCommand(DeleteTask, () => SelectedTask != null);
@@ -62,6 +65,7 @@ public sealed class MainViewModel : ObservableObject
     public IReadOnlyList<ThemeMode> ThemeOptions { get; } = Enum.GetValues<ThemeMode>().ToList();
     public IReadOnlyList<TaskStatusFilter> StatusFilterOptions { get; } = Enum.GetValues<TaskStatusFilter>().ToList();
     public IReadOnlyList<TaskPriorityFilterOption> PriorityFilterOptions { get; } = Enum.GetValues<TaskPriorityFilterOption>().ToList();
+    public IReadOnlyList<TaskSortOption> SortOptions { get; } = Enum.GetValues<TaskSortOption>().ToList();
 
     public string StatusMessage
     {
@@ -102,6 +106,18 @@ public sealed class MainViewModel : ObservableObject
                 return;
 
             ApplyTaskListFilters();
+        }
+    }
+
+    public TaskSortOption SelectedSortOption
+    {
+        get => _sortOption;
+        set
+        {
+            if (!SetProperty(ref _sortOption, value))
+                return;
+
+            ApplySortDescriptions();
         }
     }
 
@@ -176,6 +192,41 @@ public sealed class MainViewModel : ObservableObject
     {
         TasksView.Refresh();
         SyncSelectionAfterFilter();
+    }
+
+    private void ApplySortDescriptions()
+    {
+        TasksView.SortDescriptions.Clear();
+
+        switch (_sortOption)
+        {
+            case TaskSortOption.DueDateAscending:
+                TasksView.SortDescriptions.Add(new SortDescription(nameof(TaskItem.DueDate), ListSortDirection.Ascending));
+                break;
+            case TaskSortOption.DueDateDescending:
+                TasksView.SortDescriptions.Add(new SortDescription(nameof(TaskItem.DueDate), ListSortDirection.Descending));
+                break;
+            case TaskSortOption.TitleAscending:
+                TasksView.SortDescriptions.Add(new SortDescription(nameof(TaskItem.Title), ListSortDirection.Ascending));
+                break;
+            case TaskSortOption.TitleDescending:
+                TasksView.SortDescriptions.Add(new SortDescription(nameof(TaskItem.Title), ListSortDirection.Descending));
+                break;
+            default:
+                TasksView.SortDescriptions.Add(new SortDescription(nameof(TaskItem.DueDate), ListSortDirection.Ascending));
+                break;
+        }
+    }
+
+    private void EnableLiveSorting()
+    {
+        if (TasksView is not ListCollectionView list)
+            return;
+
+        list.IsLiveSorting = true;
+        list.LiveSortingProperties.Clear();
+        list.LiveSortingProperties.Add(nameof(TaskItem.DueDate));
+        list.LiveSortingProperties.Add(nameof(TaskItem.Title));
     }
 
     private void SyncSelectionAfterFilter()

@@ -140,7 +140,7 @@
                     </StackPanel>
                     <StackPanel DockPanel.Dock="Top"
                                 Orientation="Horizontal"
-                                Margin="0,0,0,10">
+                                Margin="0,0,0,6">
                         <TextBlock VerticalAlignment="Center"
                                    Margin="0,0,8,0"
                                    Foreground="{DynamicResource SubtitleBrush}"
@@ -152,6 +152,24 @@
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Converter={StaticResource TaskPriorityFilterOptionDisplayConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Top"
+                                Orientation="Horizontal"
+                                Margin="0,0,0,10">
+                        <TextBlock VerticalAlignment="Center"
+                                   Margin="0,0,8,0"
+                                   Foreground="{DynamicResource SubtitleBrush}"
+                                   Text="Sortowanie:" />
+                        <ComboBox MinWidth="200"
+                                  Padding="6,4"
+                                  ItemsSource="{Binding SortOptions}"
+                                  SelectedItem="{Binding SelectedSortOption}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource TaskSortOptionDisplayConverter}}" />
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>

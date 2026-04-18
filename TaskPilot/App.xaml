@@ -14,6 +14,7 @@
             <conv:ThemeModeDisplayConverter x:Key="ThemeModeDisplayConverter" />
             <conv:TaskStatusFilterDisplayConverter x:Key="TaskStatusFilterDisplayConverter" />
             <conv:TaskPriorityFilterOptionDisplayConverter x:Key="TaskPriorityFilterOptionDisplayConverter" />
+            <conv:TaskSortOptionDisplayConverter x:Key="TaskSortOptionDisplayConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
