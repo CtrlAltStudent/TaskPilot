@@ -20,6 +20,7 @@ public sealed class MainViewModel : ObservableObject
     private string? _detailValidationMessage;
     private ThemeMode _selectedThemeMode = ThemeMode.System;
     private TaskStatusFilter _statusFilter = TaskStatusFilter.All;
+    private TaskPriorityFilterOption _priorityFilter = TaskPriorityFilterOption.All;
 
     public MainViewModel(ITaskPersistence persistence)
     {
@@ -38,7 +39,7 @@ public sealed class MainViewModel : ObservableObject
 
         _tasksViewSource = new CollectionViewSource { Source = Tasks };
         _tasksViewSource.Filter += OnTasksFilter;
-        ApplyStatusFilter();
+        ApplyTaskListFilters();
 
         AddTaskCommand = new RelayCommand(AddTask);
         DeleteTaskCommand = new RelayCommand(DeleteTask, () => SelectedTask != null);
@@ -60,6 +61,7 @@ public sealed class MainViewModel : ObservableObject
     public IReadOnlyList<TaskPriority> PriorityOptions { get; } = Enum.GetValues<TaskPriority>().ToList();
     public IReadOnlyList<ThemeMode> ThemeOptions { get; } = Enum.GetValues<ThemeMode>().ToList();
     public IReadOnlyList<TaskStatusFilter> StatusFilterOptions { get; } = Enum.GetValues<TaskStatusFilter>().ToList();
+    public IReadOnlyList<TaskPriorityFilterOption> PriorityFilterOptions { get; } = Enum.GetValues<TaskPriorityFilterOption>().ToList();
 
     public string StatusMessage
     {
@@ -87,7 +89,19 @@ public sealed class MainViewModel : ObservableObject
             if (!SetProperty(ref _statusFilter, value))
                 return;
 
-            ApplyStatusFilter();
+            ApplyTaskListFilters();
+        }
+    }
+
+    public TaskPriorityFilterOption SelectedPriorityFilter
+    {
+        get => _priorityFilter;
+        set
+        {
+            if (!SetProperty(ref _priorityFilter, value))
+                return;
+
+            ApplyTaskListFilters();
         }
     }
 
@@ -127,7 +141,7 @@ public sealed class MainViewModel : ObservableObject
         }
 
         TryPersist(silent: true);
-        ApplyStatusFilter();
+        ApplyTaskListFilters();
     }
 
     private void OnTasksFilter(object sender, FilterEventArgs e)
@@ -138,16 +152,27 @@ public sealed class MainViewModel : ObservableObject
             return;
         }
 
-        e.Accepted = _statusFilter switch
+        var statusOk = _statusFilter switch
         {
             TaskStatusFilter.All => true,
             TaskStatusFilter.Active => !task.IsCompleted,
             TaskStatusFilter.Completed => task.IsCompleted,
             _ => true
         };
+
+        var priorityOk = _priorityFilter switch
+        {
+            TaskPriorityFilterOption.All => true,
+            TaskPriorityFilterOption.Low => task.Priority == TaskPriority.Low,
+            TaskPriorityFilterOption.Medium => task.Priority == TaskPriority.Medium,
+            TaskPriorityFilterOption.High => task.Priority == TaskPriority.High,
+            _ => true
+        };
+
+        e.Accepted = statusOk && priorityOk;
     }
 
-    private void ApplyStatusFilter()
+    private void ApplyTaskListFilters()
     {
         TasksView.Refresh();
         SyncSelectionAfterFilter();
@@ -192,7 +217,11 @@ public sealed class MainViewModel : ObservableObject
         if (e.PropertyName == nameof(TaskItem.IsCompleted))
         {
             CommandManager.InvalidateRequerySuggested();
-            ApplyStatusFilter();
+            ApplyTaskListFilters();
+        }
+        else if (e.PropertyName == nameof(TaskItem.Priority))
+        {
+            ApplyTaskListFilters();
         }
     }
 
@@ -260,7 +289,7 @@ public sealed class MainViewModel : ObservableObject
 
         Tasks.Add(task);
         SelectedTask = task;
-        ApplyStatusFilter();
+        ApplyTaskListFilters();
     }
 
     private void DeleteTask()
@@ -287,7 +316,7 @@ public sealed class MainViewModel : ObservableObject
             ? null
             : Tasks[Math.Clamp(index, 0, Tasks.Count - 1)];
 
-        ApplyStatusFilter();
+        ApplyTaskListFilters();
     }
 
     private void MarkComplete()

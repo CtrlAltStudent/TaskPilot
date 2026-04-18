@@ -122,7 +122,7 @@
                                Margin="0,0,0,6" />
                     <StackPanel DockPanel.Dock="Top"
                                 Orientation="Horizontal"
-                                Margin="0,0,0,10">
+                                Margin="0,0,0,6">
                         <TextBlock VerticalAlignment="Center"
                                    Margin="0,0,8,0"
                                    Foreground="{DynamicResource SubtitleBrush}"
@@ -134,6 +134,24 @@
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Converter={StaticResource TaskStatusFilterDisplayConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Top"
+                                Orientation="Horizontal"
+                                Margin="0,0,0,10">
+                        <TextBlock VerticalAlignment="Center"
+                                   Margin="0,0,8,0"
+                                   Foreground="{DynamicResource SubtitleBrush}"
+                                   Text="Filtr priorytetu:" />
+                        <ComboBox MinWidth="140"
+                                  Padding="6,4"
+                                  ItemsSource="{Binding PriorityFilterOptions}"
+                                  SelectedItem="{Binding SelectedPriorityFilter}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource TaskPriorityFilterOptionDisplayConverter}}" />
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>

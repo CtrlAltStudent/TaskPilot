@@ -13,6 +13,7 @@
             <conv:NullOrEmptyToVisibilityConverter x:Key="NullToVisibilityConverter" />
             <conv:ThemeModeDisplayConverter x:Key="ThemeModeDisplayConverter" />
             <conv:TaskStatusFilterDisplayConverter x:Key="TaskStatusFilterDisplayConverter" />
+            <conv:TaskPriorityFilterOptionDisplayConverter x:Key="TaskPriorityFilterOptionDisplayConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
