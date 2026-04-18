@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 using TaskPilot.Models;
 using TaskPilot.Services;
@@ -12,11 +13,13 @@ namespace TaskPilot.ViewModels;
 public sealed class MainViewModel : ObservableObject
 {
     private readonly ITaskPersistence _persistence;
+    private readonly CollectionViewSource _tasksViewSource;
     private TaskItem? _selectedTask;
     private int _nextId;
     private string _statusMessage = string.Empty;
     private string? _detailValidationMessage;
     private ThemeMode _selectedThemeMode = ThemeMode.System;
+    private TaskStatusFilter _statusFilter = TaskStatusFilter.All;
 
     public MainViewModel(ITaskPersistence persistence)
     {
@@ -33,6 +36,10 @@ public sealed class MainViewModel : ObservableObject
 
         Tasks.CollectionChanged += OnTasksCollectionChanged;
 
+        _tasksViewSource = new CollectionViewSource { Source = Tasks };
+        _tasksViewSource.Filter += OnTasksFilter;
+        ApplyStatusFilter();
+
         AddTaskCommand = new RelayCommand(AddTask);
         DeleteTaskCommand = new RelayCommand(DeleteTask, () => SelectedTask != null);
         MarkCompleteCommand = new RelayCommand(MarkComplete, () => SelectedTask is { IsCompleted: false });
@@ -48,8 +55,11 @@ public sealed class MainViewModel : ObservableObject
 
     public ObservableCollection<TaskItem> Tasks { get; }
 
+    public ICollectionView TasksView => _tasksViewSource.View;
+
     public IReadOnlyList<TaskPriority> PriorityOptions { get; } = Enum.GetValues<TaskPriority>().ToList();
     public IReadOnlyList<ThemeMode> ThemeOptions { get; } = Enum.GetValues<ThemeMode>().ToList();
+    public IReadOnlyList<TaskStatusFilter> StatusFilterOptions { get; } = Enum.GetValues<TaskStatusFilter>().ToList();
 
     public string StatusMessage
     {
@@ -67,6 +77,18 @@ public sealed class MainViewModel : ObservableObject
     {
         get => _selectedThemeMode;
         set => SetProperty(ref _selectedThemeMode, value);
+    }
+
+    public TaskStatusFilter SelectedStatusFilter
+    {
+        get => _statusFilter;
+        set
+        {
+            if (!SetProperty(ref _statusFilter, value))
+                return;
+
+            ApplyStatusFilter();
+        }
     }
 
     public TaskItem? SelectedTask
@@ -105,6 +127,49 @@ public sealed class MainViewModel : ObservableObject
         }
 
         TryPersist(silent: true);
+        ApplyStatusFilter();
+    }
+
+    private void OnTasksFilter(object sender, FilterEventArgs e)
+    {
+        if (e.Item is not TaskItem task)
+        {
+            e.Accepted = false;
+            return;
+        }
+
+        e.Accepted = _statusFilter switch
+        {
+            TaskStatusFilter.All => true,
+            TaskStatusFilter.Active => !task.IsCompleted,
+            TaskStatusFilter.Completed => task.IsCompleted,
+            _ => true
+        };
+    }
+
+    private void ApplyStatusFilter()
+    {
+        TasksView.Refresh();
+        SyncSelectionAfterFilter();
+    }
+
+    private void SyncSelectionAfterFilter()
+    {
+        if (SelectedTask is null)
+            return;
+
+        var visible = false;
+        foreach (var item in TasksView)
+        {
+            if (ReferenceEquals(item, SelectedTask))
+            {
+                visible = true;
+                break;
+            }
+        }
+
+        if (!visible)
+            SelectedTask = TasksView.Cast<TaskItem>().FirstOrDefault();
     }
 
     private void AttachTask(TaskItem item)
@@ -125,7 +190,10 @@ public sealed class MainViewModel : ObservableObject
         TryPersist(silent: true);
 
         if (e.PropertyName == nameof(TaskItem.IsCompleted))
+        {
             CommandManager.InvalidateRequerySuggested();
+            ApplyStatusFilter();
+        }
     }
 
     private void RefreshDetailValidation()
@@ -192,6 +260,7 @@ public sealed class MainViewModel : ObservableObject
 
         Tasks.Add(task);
         SelectedTask = task;
+        ApplyStatusFilter();
     }
 
     private void DeleteTask()
@@ -217,6 +286,8 @@ public sealed class MainViewModel : ObservableObject
         SelectedTask = Tasks.Count == 0
             ? null
             : Tasks[Math.Clamp(index, 0, Tasks.Count - 1)];
+
+        ApplyStatusFilter();
     }
 
     private void MarkComplete()

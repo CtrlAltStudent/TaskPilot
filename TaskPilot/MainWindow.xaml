@@ -119,8 +119,26 @@
                                FontWeight="SemiBold"
                                FontSize="14"
                                Foreground="{DynamicResource SectionTitleBrush}"
-                               Margin="0,0,0,10" />
-                    <DataGrid ItemsSource="{Binding Tasks}"
+                               Margin="0,0,0,6" />
+                    <StackPanel DockPanel.Dock="Top"
+                                Orientation="Horizontal"
+                                Margin="0,0,0,10">
+                        <TextBlock VerticalAlignment="Center"
+                                   Margin="0,0,8,0"
+                                   Foreground="{DynamicResource SubtitleBrush}"
+                                   Text="Filtr statusu:" />
+                        <ComboBox MinWidth="140"
+                                  Padding="6,4"
+                                  ItemsSource="{Binding StatusFilterOptions}"
+                                  SelectedItem="{Binding SelectedStatusFilter}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource TaskStatusFilterDisplayConverter}}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <DataGrid ItemsSource="{Binding TasksView}"
                               SelectedItem="{Binding SelectedTask}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"

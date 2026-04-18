@@ -12,6 +12,7 @@
             <conv:TaskOverdueConverter x:Key="TaskOverdueConverter" />
             <conv:NullOrEmptyToVisibilityConverter x:Key="NullToVisibilityConverter" />
             <conv:ThemeModeDisplayConverter x:Key="ThemeModeDisplayConverter" />
+            <conv:TaskStatusFilterDisplayConverter x:Key="TaskStatusFilterDisplayConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
