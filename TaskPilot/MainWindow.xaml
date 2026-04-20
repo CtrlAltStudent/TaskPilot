@@ -121,6 +121,15 @@
                                Foreground="{DynamicResource SectionTitleBrush}"
                                Margin="0,0,0,6" />
                     <StackPanel DockPanel.Dock="Top"
+                                Margin="0,0,0,6">
+                        <TextBlock Foreground="{DynamicResource SubtitleBrush}"
+                                   Text="Szukaj (tytuł lub opis):" />
+                        <TextBox Margin="0,4,0,0"
+                                 Padding="8,6"
+                                 MaxLength="200"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Top"
                                 Orientation="Horizontal"
                                 Margin="0,0,0,6">
                         <TextBlock VerticalAlignment="Center"

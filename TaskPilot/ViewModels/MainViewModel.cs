@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -22,6 +23,7 @@ public sealed class MainViewModel : ObservableObject
     private TaskStatusFilter _statusFilter = TaskStatusFilter.All;
     private TaskPriorityFilterOption _priorityFilter = TaskPriorityFilterOption.All;
     private TaskSortOption _sortOption = TaskSortOption.DueDateAscending;
+    private string _searchText = string.Empty;
 
     public MainViewModel(ITaskPersistence persistence)
     {
@@ -121,6 +123,21 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Tekst wyszukiwania po tytule i opisie (bez rozróżniania wielkości liter); pusty = brak filtru tekstowego.
+    /// </summary>
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (!SetProperty(ref _searchText, value))
+                return;
+
+            ApplyTaskListFilters();
+        }
+    }
+
     public TaskItem? SelectedTask
     {
         get => _selectedTask;
@@ -185,7 +202,12 @@ public sealed class MainViewModel : ObservableObject
             _ => true
         };
 
-        e.Accepted = statusOk && priorityOk;
+        var needle = _searchText.Trim();
+        var searchOk = needle.Length == 0
+                       || task.Title.Contains(needle, StringComparison.OrdinalIgnoreCase)
+                       || task.Description.Contains(needle, StringComparison.OrdinalIgnoreCase);
+
+        e.Accepted = statusOk && priorityOk && searchOk;
     }
 
     private void ApplyTaskListFilters()
@@ -270,7 +292,7 @@ public sealed class MainViewModel : ObservableObject
             CommandManager.InvalidateRequerySuggested();
             ApplyTaskListFilters();
         }
-        else if (e.PropertyName == nameof(TaskItem.Priority))
+        else if (e.PropertyName is nameof(TaskItem.Priority) or nameof(TaskItem.Title) or nameof(TaskItem.Description))
         {
             ApplyTaskListFilters();
         }
