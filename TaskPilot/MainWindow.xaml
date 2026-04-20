@@ -73,6 +73,15 @@
                             Padding="14,8"
                             Margin="0"
                             MinWidth="110" />
+                    <Button Content="Eksportuj…"
+                            Style="{StaticResource TaskPilotButtonStyle}"
+                            Command="{Binding ExportTasksCommand}"
+                            MinWidth="100" />
+                    <Button Content="Importuj…"
+                            Style="{StaticResource TaskPilotButtonStyle}"
+                            Command="{Binding ImportTasksCommand}"
+                            Margin="0"
+                            MinWidth="100" />
                 </StackPanel>
             </Grid>
         </Border>

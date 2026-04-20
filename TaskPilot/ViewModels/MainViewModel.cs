@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Data;
+using Microsoft.Win32;
 using System.Windows.Input;
 using TaskPilot.Models;
 using TaskPilot.Services;
@@ -55,6 +56,8 @@ public sealed class MainViewModel : ObservableObject
         DeleteTaskCommand = new RelayCommand(DeleteTask, () => SelectedTask != null);
         MarkCompleteCommand = new RelayCommand(MarkComplete, () => SelectedTask is { IsCompleted: false });
         SaveNowCommand = new RelayCommand(SaveNow);
+        ExportTasksCommand = new RelayCommand(ExportTasksToFile);
+        ImportTasksCommand = new RelayCommand(ImportTasksFromFile);
 
         RefreshDetailValidation();
         TryPersist(silent: true);
@@ -177,6 +180,8 @@ public sealed class MainViewModel : ObservableObject
     public ICommand DeleteTaskCommand { get; }
     public ICommand MarkCompleteCommand { get; }
     public ICommand SaveNowCommand { get; }
+    public ICommand ExportTasksCommand { get; }
+    public ICommand ImportTasksCommand { get; }
 
     private void OnTasksCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -402,6 +407,121 @@ public sealed class MainViewModel : ObservableObject
         }
 
         TryPersist(silent: false);
+    }
+
+    private void ExportTasksToFile()
+    {
+        if (!TaskValidator.TryValidateAll(Tasks, out var err))
+        {
+            MessageBox.Show(
+                $"Nie można wyeksportować listy — popraw dane lub usuń nieprawidłowe zadania.\n{err}",
+                "TaskPilot — walidacja",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            StatusMessage = $"Eksport przerwany: {err}";
+            return;
+        }
+
+        var dlg = new SaveFileDialog
+        {
+            Filter = "JSON (*.json)|*.json|Wszystkie pliki|*.*",
+            DefaultExt = "json",
+            FileName = "taskpilot-zadania.json",
+            Title = "Eksport listy zadań"
+        };
+
+        if (dlg.ShowDialog() != true)
+        {
+            StatusMessage = "Eksport anulowany.";
+            return;
+        }
+
+        if (!TaskListJsonSerializer.TryWriteFile(dlg.FileName, Tasks, out var writeErr))
+        {
+            MessageBox.Show(writeErr ?? "Nie udało się zapisać pliku.", "TaskPilot — eksport",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            StatusMessage = $"Eksport nie powiódł się: {writeErr}";
+            return;
+        }
+
+        StatusMessage = $"Wyeksportowano {Tasks.Count} zadań do:\n{dlg.FileName}";
+    }
+
+    private void ImportTasksFromFile()
+    {
+        var confirm = MessageBox.Show(
+            "Lista zadań z pliku zastąpi bieżącą zawartość aplikacji.\n\n" +
+            "Po imporcie zapis domyślny (%LocalAppData%\\TaskPilot\\tasks.json) zostanie zaktualizowany przy kolejnej próbie zapisu (np. edycja lub „Zapisz teraz”).\n\nKontynuować?",
+            "TaskPilot — import z pliku",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            StatusMessage = "Import anulowany.";
+            return;
+        }
+
+        var dlg = new OpenFileDialog
+        {
+            Filter = "JSON (*.json)|*.json|Wszystkie pliki|*.*",
+            Title = "Import listy zadań"
+        };
+
+        if (dlg.ShowDialog() != true)
+        {
+            StatusMessage = "Import anulowany.";
+            return;
+        }
+
+        if (!TaskListJsonSerializer.TryReadFile(dlg.FileName, out var imported, out var readErr))
+        {
+            MessageBox.Show(readErr ?? "Nie udało się wczytać pliku.", "TaskPilot — import",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            StatusMessage = $"Import nie powiódł się: {readErr}";
+            return;
+        }
+
+        if (imported.Count == 0)
+        {
+            MessageBox.Show("Plik nie zawiera żadnych zadań w tablicy \"tasks\".", "TaskPilot — import",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            StatusMessage = "Import anulowany — pusta lista w pliku.";
+            return;
+        }
+
+        if (!TaskValidator.TryValidateAll(imported, out var verr))
+        {
+            MessageBox.Show(
+                $"Plik JSON jest poprawny składniowo, ale zawiera zadania niespełniające walidacji aplikacji:\n{verr}\n\nImport został anulowany.",
+                "TaskPilot — walidacja importu",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            StatusMessage = "Import anulowany — błędy walidacji w pliku.";
+            return;
+        }
+
+        foreach (var item in Tasks.ToList())
+            DetachTask(item);
+
+        Tasks.Clear();
+
+        foreach (var item in imported)
+            Tasks.Add(item);
+
+        _nextId = Tasks.Count == 0 ? 1 : Tasks.Max(t => t.Id) + 1;
+
+        SelectedStatusFilter = TaskStatusFilter.All;
+        SelectedPriorityFilter = TaskPriorityFilterOption.All;
+        SelectedCategoryFilter = CategoryFilterAll;
+        SearchText = string.Empty;
+
+        RefreshCategoryFilterChoices();
+        SelectedTask = Tasks.FirstOrDefault();
+        RefreshDetailValidation();
+        CommandManager.InvalidateRequerySuggested();
+        TryPersist(silent: true);
+        StatusMessage = $"Zaimportowano {Tasks.Count} zadań z pliku:\n{dlg.FileName}";
     }
 
     private void AddTask()
