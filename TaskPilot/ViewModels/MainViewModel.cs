@@ -13,6 +13,9 @@ namespace TaskPilot.ViewModels;
 
 public sealed class MainViewModel : ObservableObject
 {
+    private const string CategoryFilterAll = "Wszystkie";
+    private const string CategoryFilterNone = "Bez kategorii";
+
     private readonly ITaskPersistence _persistence;
     private readonly CollectionViewSource _tasksViewSource;
     private TaskItem? _selectedTask;
@@ -24,6 +27,7 @@ public sealed class MainViewModel : ObservableObject
     private TaskPriorityFilterOption _priorityFilter = TaskPriorityFilterOption.All;
     private TaskSortOption _sortOption = TaskSortOption.DueDateAscending;
     private string _searchText = string.Empty;
+    private string _categoryFilterSelection = CategoryFilterAll;
 
     public MainViewModel(ITaskPersistence persistence)
     {
@@ -45,6 +49,7 @@ public sealed class MainViewModel : ObservableObject
         ApplyTaskListFilters();
         ApplySortDescriptions();
         EnableLiveSorting();
+        RefreshCategoryFilterChoices();
 
         AddTaskCommand = new RelayCommand(AddTask);
         DeleteTaskCommand = new RelayCommand(DeleteTask, () => SelectedTask != null);
@@ -68,6 +73,8 @@ public sealed class MainViewModel : ObservableObject
     public IReadOnlyList<TaskStatusFilter> StatusFilterOptions { get; } = Enum.GetValues<TaskStatusFilter>().ToList();
     public IReadOnlyList<TaskPriorityFilterOption> PriorityFilterOptions { get; } = Enum.GetValues<TaskPriorityFilterOption>().ToList();
     public IReadOnlyList<TaskSortOption> SortOptions { get; } = Enum.GetValues<TaskSortOption>().ToList();
+
+    public ObservableCollection<string> CategoryFilterChoices { get; } = new();
 
     public string StatusMessage
     {
@@ -138,6 +145,18 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    public string SelectedCategoryFilter
+    {
+        get => _categoryFilterSelection;
+        set
+        {
+            if (!SetProperty(ref _categoryFilterSelection, value))
+                return;
+
+            ApplyTaskListFilters();
+        }
+    }
+
     public TaskItem? SelectedTask
     {
         get => _selectedTask;
@@ -174,6 +193,29 @@ public sealed class MainViewModel : ObservableObject
         }
 
         TryPersist(silent: true);
+        RefreshCategoryFilterChoices();
+    }
+
+    private void RefreshCategoryFilterChoices()
+    {
+        var prev = _categoryFilterSelection;
+        CategoryFilterChoices.Clear();
+        CategoryFilterChoices.Add(CategoryFilterAll);
+        CategoryFilterChoices.Add(CategoryFilterNone);
+        foreach (var name in Tasks
+                     .Select(t => (t.Category ?? string.Empty).Trim())
+                     .Where(s => s.Length > 0)
+                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
+            CategoryFilterChoices.Add(name);
+
+        var stillValid = CategoryFilterChoices.Any(x => string.Equals(x, prev, StringComparison.Ordinal));
+        if (!stillValid)
+        {
+            _categoryFilterSelection = CategoryFilterAll;
+            OnPropertyChanged(nameof(SelectedCategoryFilter));
+        }
+
         ApplyTaskListFilters();
     }
 
@@ -205,9 +247,19 @@ public sealed class MainViewModel : ObservableObject
         var needle = _searchText.Trim();
         var searchOk = needle.Length == 0
                        || task.Title.Contains(needle, StringComparison.OrdinalIgnoreCase)
-                       || task.Description.Contains(needle, StringComparison.OrdinalIgnoreCase);
+                       || task.Description.Contains(needle, StringComparison.OrdinalIgnoreCase)
+                       || (!string.IsNullOrEmpty(task.Category) &&
+                           task.Category.Contains(needle, StringComparison.OrdinalIgnoreCase));
 
-        e.Accepted = statusOk && priorityOk && searchOk;
+        var categoryOk = _categoryFilterSelection switch
+        {
+            CategoryFilterAll => true,
+            CategoryFilterNone => string.IsNullOrWhiteSpace(task.Category),
+            _ => string.Equals((task.Category ?? string.Empty).Trim(), _categoryFilterSelection.Trim(),
+                StringComparison.OrdinalIgnoreCase)
+        };
+
+        e.Accepted = statusOk && priorityOk && searchOk && categoryOk;
     }
 
     private void ApplyTaskListFilters()
@@ -292,6 +344,10 @@ public sealed class MainViewModel : ObservableObject
             CommandManager.InvalidateRequerySuggested();
             ApplyTaskListFilters();
         }
+        else if (e.PropertyName == nameof(TaskItem.Category))
+        {
+            RefreshCategoryFilterChoices();
+        }
         else if (e.PropertyName is nameof(TaskItem.Priority) or nameof(TaskItem.Title) or nameof(TaskItem.Description))
         {
             ApplyTaskListFilters();
@@ -355,6 +411,7 @@ public sealed class MainViewModel : ObservableObject
             Id = _nextId++,
             Title = "Nowe zadanie",
             Description = string.Empty,
+            Category = string.Empty,
             DueDate = DateTime.Today,
             Priority = TaskPriority.Medium,
             IsCompleted = false

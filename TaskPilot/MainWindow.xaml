@@ -167,6 +167,18 @@
                     </StackPanel>
                     <StackPanel DockPanel.Dock="Top"
                                 Orientation="Horizontal"
+                                Margin="0,0,0,6">
+                        <TextBlock VerticalAlignment="Center"
+                                   Margin="0,0,8,0"
+                                   Foreground="{DynamicResource SubtitleBrush}"
+                                   Text="Filtr kategorii:" />
+                        <ComboBox MinWidth="160"
+                                  Padding="6,4"
+                                  ItemsSource="{Binding CategoryFilterChoices}"
+                                  SelectedItem="{Binding SelectedCategoryFilter}" />
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Top"
+                                Orientation="Horizontal"
                                 Margin="0,0,0,10">
                         <TextBlock VerticalAlignment="Center"
                                    Margin="0,0,8,0"
@@ -207,6 +219,10 @@
                             <DataGridTextColumn Header="Tytuł"
                                                 Binding="{Binding Title}"
                                                 Width="*"
+                                                IsReadOnly="True" />
+                            <DataGridTextColumn Header="Kategoria"
+                                                Binding="{Binding Category}"
+                                                Width="100"
                                                 IsReadOnly="True" />
                             <DataGridTextColumn Header="Termin"
                                                 Binding="{Binding DueDate, StringFormat=dd.MM.yyyy}"
@@ -264,6 +280,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="120" />
@@ -296,21 +313,34 @@
                                      Margin="0,0,0,12" />
 
                             <TextBlock Grid.Row="2"
+                                       Text="Kategoria"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,12,10"
+                                       Foreground="{DynamicResource LabelBrush}" />
+                            <TextBox Grid.Row="2"
+                                     Grid.Column="1"
+                                     Text="{Binding Category, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,10"
+                                     Padding="8,6"
+                                     MaxLength="80"
+                                     ToolTip="Dowolna etykieta, np. Praca, Dom. Puste = bez kategorii." />
+
+                            <TextBlock Grid.Row="3"
                                        Text="Termin"
                                        VerticalAlignment="Center"
                                        Margin="0,0,12,10"
                                        Foreground="{DynamicResource LabelBrush}" />
-                            <DatePicker Grid.Row="2"
+                            <DatePicker Grid.Row="3"
                                         Grid.Column="1"
                                         SelectedDate="{Binding DueDate, Mode=TwoWay}"
                                         Margin="0,0,0,10" />
 
-                            <TextBlock Grid.Row="3"
+                            <TextBlock Grid.Row="4"
                                        Text="Priorytet"
                                        VerticalAlignment="Center"
                                        Margin="0,0,12,10"
                                        Foreground="{DynamicResource LabelBrush}" />
-                            <ComboBox Grid.Row="3"
+                            <ComboBox Grid.Row="4"
                                       Grid.Column="1"
                                       ItemsSource="{Binding DataContext.PriorityOptions, RelativeSource={RelativeSource AncestorType=Window}}"
                                       SelectedItem="{Binding Priority}"
@@ -323,23 +353,23 @@
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
 
-                            <TextBlock Grid.Row="4"
+                            <TextBlock Grid.Row="5"
                                        Text="Status"
                                        VerticalAlignment="Center"
                                        Margin="0,0,12,10"
                                        Foreground="{DynamicResource LabelBrush}" />
-                            <CheckBox Grid.Row="4"
+                            <CheckBox Grid.Row="5"
                                       Grid.Column="1"
                                       Content="Wykonane"
                                       IsChecked="{Binding IsCompleted}"
                                       VerticalAlignment="Center"
                                       Margin="0,0,0,10" />
 
-                            <TextBlock Grid.Row="5"
+                            <TextBlock Grid.Row="6"
                                        Text="Identyfikator"
                                        VerticalAlignment="Center"
                                        Foreground="{DynamicResource LabelBrush}" />
-                            <TextBlock Grid.Row="5"
+                            <TextBlock Grid.Row="6"
                                        Grid.Column="1"
                                        Text="{Binding Id}"
                                        VerticalAlignment="Center"

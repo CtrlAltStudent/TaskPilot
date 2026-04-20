@@ -10,6 +10,7 @@ public sealed class TaskItem : ObservableObject
     private DateTime _dueDate = DateTime.Today;
     private TaskPriority _priority = TaskPriority.Medium;
     private bool _isCompleted;
+    private string _category = string.Empty;
 
     public int Id
     {
@@ -27,6 +28,15 @@ public sealed class TaskItem : ObservableObject
     {
         get => _description;
         set => SetProperty(ref _description, value);
+    }
+
+    /// <summary>
+    /// Dowolna etykieta kategorii (np. Praca, Dom); puste = brak kategorii.
+    /// </summary>
+    public string Category
+    {
+        get => _category;
+        set => SetProperty(ref _category, value);
     }
 
     public DateTime DueDate

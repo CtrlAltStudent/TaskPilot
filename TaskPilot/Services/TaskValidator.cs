@@ -14,6 +14,12 @@ public static class TaskValidator
             return false;
         }
 
+        if (task.Category.Length > 80)
+        {
+            error = "Kategoria nie może przekraczać 80 znaków.";
+            return false;
+        }
+
         if (!task.IsCompleted && task.DueDate.Date < DateTime.Today)
         {
             error = "Termin zadania nie może być wcześniejszy niż dzisiejsza data (dla zadań niewykonanych).";

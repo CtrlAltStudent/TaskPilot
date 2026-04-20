@@ -43,6 +43,7 @@ public sealed class JsonTaskPersistence : ITaskPersistence
                     Id = dto.Id,
                     Title = dto.Title ?? string.Empty,
                     Description = dto.Description ?? string.Empty,
+                    Category = dto.Category ?? string.Empty,
                     DueDate = dto.DueDate == default ? DateTime.Today : dto.DueDate.Date,
                     Priority = dto.Priority,
                     IsCompleted = dto.IsCompleted
@@ -84,6 +85,7 @@ public sealed class JsonTaskPersistence : ITaskPersistence
                 Id = t.Id,
                 Title = t.Title,
                 Description = t.Description,
+                Category = t.Category,
                 DueDate = t.DueDate.Date,
                 Priority = t.Priority,
                 IsCompleted = t.IsCompleted
@@ -104,6 +106,7 @@ public sealed class JsonTaskPersistence : ITaskPersistence
         public int Id { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
+        public string? Category { get; set; }
         public DateTime DueDate { get; set; }
         public TaskPriority Priority { get; set; }
         public bool IsCompleted { get; set; }
