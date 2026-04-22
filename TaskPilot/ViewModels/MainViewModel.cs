@@ -537,6 +537,7 @@ public sealed class MainViewModel : ObservableObject
 
     private void AddTask()
     {
+        var nowUtc = DateTime.UtcNow;
         var task = new TaskItem
         {
             Id = _nextId++,
@@ -545,7 +546,11 @@ public sealed class MainViewModel : ObservableObject
             Category = string.Empty,
             DueDate = DateTime.Today,
             Priority = TaskPriority.Medium,
-            IsCompleted = false
+            IsCompleted = false,
+            AssignedTo = string.Empty,
+            ClientProject = string.Empty,
+            CreatedUtc = nowUtc,
+            UpdatedUtc = nowUtc
         };
 
         Tasks.Add(task);

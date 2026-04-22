@@ -29,7 +29,11 @@ public static class TaskListJsonSerializer
                 Category = t.Category,
                 DueDate = t.DueDate.Date,
                 Priority = t.Priority,
-                IsCompleted = t.IsCompleted
+                IsCompleted = t.IsCompleted,
+                AssignedTo = t.AssignedTo,
+                ClientProject = t.ClientProject,
+                CreatedUtc = t.CreatedUtc,
+                UpdatedUtc = t.UpdatedUtc
             }).ToList()
         };
 
@@ -56,8 +60,11 @@ public static class TaskListJsonSerializer
                 return false;
             }
 
+            var migrationStamp = DateTime.UtcNow;
             foreach (var dto in doc.Tasks)
             {
+                var created = dto.CreatedUtc ?? migrationStamp;
+                var updated = dto.UpdatedUtc ?? dto.CreatedUtc ?? migrationStamp;
                 tasks.Add(new TaskItem
                 {
                     Id = dto.Id,
@@ -66,7 +73,11 @@ public static class TaskListJsonSerializer
                     Category = dto.Category ?? string.Empty,
                     DueDate = dto.DueDate == default ? DateTime.Today : dto.DueDate.Date,
                     Priority = dto.Priority,
-                    IsCompleted = dto.IsCompleted
+                    IsCompleted = dto.IsCompleted,
+                    AssignedTo = dto.AssignedTo ?? string.Empty,
+                    ClientProject = dto.ClientProject ?? string.Empty,
+                    CreatedUtc = created,
+                    UpdatedUtc = updated
                 });
             }
 
@@ -146,5 +157,9 @@ public static class TaskListJsonSerializer
         public DateTime DueDate { get; set; }
         public TaskPriority Priority { get; set; }
         public bool IsCompleted { get; set; }
+        public string? AssignedTo { get; set; }
+        public string? ClientProject { get; set; }
+        public DateTime? CreatedUtc { get; set; }
+        public DateTime? UpdatedUtc { get; set; }
     }
 }

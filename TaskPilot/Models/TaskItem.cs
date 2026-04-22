@@ -11,6 +11,10 @@ public sealed class TaskItem : ObservableObject
     private TaskPriority _priority = TaskPriority.Medium;
     private bool _isCompleted;
     private string _category = string.Empty;
+    private string _assignedTo = string.Empty;
+    private string _clientProject = string.Empty;
+    private DateTime _createdUtc = DateTime.UtcNow;
+    private DateTime _updatedUtc = DateTime.UtcNow;
 
     public int Id
     {
@@ -39,6 +43,34 @@ public sealed class TaskItem : ObservableObject
         set => SetProperty(ref _category, value);
     }
 
+    /// <summary>Osoba odpowiedzialna (dowolny tekst, np. inicjały lub e-mail).</summary>
+    public string AssignedTo
+    {
+        get => _assignedTo;
+        set => SetProperty(ref _assignedTo, value);
+    }
+
+    /// <summary>Klient / projekt / kosztownik (kontekst pracy).</summary>
+    public string ClientProject
+    {
+        get => _clientProject;
+        set => SetProperty(ref _clientProject, value);
+    }
+
+    /// <summary>Moment utworzenia rekordu (UTC).</summary>
+    public DateTime CreatedUtc
+    {
+        get => _createdUtc;
+        set => SetProperty(ref _createdUtc, NormalizeUtc(value));
+    }
+
+    /// <summary>Ostatnia zmiana danych zadania (UTC).</summary>
+    public DateTime UpdatedUtc
+    {
+        get => _updatedUtc;
+        set => SetProperty(ref _updatedUtc, NormalizeUtc(value));
+    }
+
     public DateTime DueDate
     {
         get => _dueDate;
@@ -56,4 +88,12 @@ public sealed class TaskItem : ObservableObject
         get => _isCompleted;
         set => SetProperty(ref _isCompleted, value);
     }
+
+    private static DateTime NormalizeUtc(DateTime value) =>
+        value.Kind switch
+        {
+            DateTimeKind.Utc => value,
+            DateTimeKind.Local => value.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+        };
 }

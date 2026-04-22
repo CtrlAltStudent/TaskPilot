@@ -20,6 +20,18 @@ public static class TaskValidator
             return false;
         }
 
+        if (task.AssignedTo.Length > 120)
+        {
+            error = "Pole „Przypisane do” nie może przekraczać 120 znaków.";
+            return false;
+        }
+
+        if (task.ClientProject.Length > 120)
+        {
+            error = "Pole „Klient / projekt” nie może przekraczać 120 znaków.";
+            return false;
+        }
+
         if (!task.IsCompleted && task.DueDate.Date < DateTime.Today)
         {
             error = "Termin zadania nie może być wcześniejszy niż dzisiejsza data (dla zadań niewykonanych).";
