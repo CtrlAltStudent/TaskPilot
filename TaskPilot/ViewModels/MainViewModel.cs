@@ -7,6 +7,9 @@ using System.Windows;
 using System.Windows.Data;
 using Microsoft.Win32;
 using System.Windows.Input;
+using MessageBox = System.Windows.MessageBox;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
+using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using TaskPilot.Models;
 using TaskPilot.Services;
 
@@ -35,6 +38,10 @@ public sealed class MainViewModel : ObservableObject
     private string _categoryFilterSelection = CategoryFilterAll;
     private string _assignedToFilterSelection = AssignedToFilterAll;
     private string _clientProjectFilterSelection = ClientProjectFilterAll;
+    private int _kpiOverdueCount;
+    private int _kpiDueTodayCount;
+    private int _kpiHighPriorityOpenCount;
+    private int _kpiUnassignedCount;
 
     public MainViewModel(ITaskPersistence persistence)
     {
@@ -70,6 +77,8 @@ public sealed class MainViewModel : ObservableObject
             StatusMessage = "Brak zadań — dodaj pierwsze lub wczytaj z pliku JSON.";
         else
             StatusMessage = $"Wczytano {Tasks.Count} zadań. {_persistence.StorageDescription}";
+
+        RefreshKpis();
     }
 
     public ObservableCollection<TaskItem> Tasks { get; }
@@ -85,6 +94,34 @@ public sealed class MainViewModel : ObservableObject
     public ObservableCollection<string> CategoryFilterChoices { get; } = new();
     public ObservableCollection<string> AssignedToFilterChoices { get; } = new();
     public ObservableCollection<string> ClientProjectFilterChoices { get; } = new();
+
+    /// <summary>Niewykonane z terminem wcześniejszym niż dziś.</summary>
+    public int KpiOverdueCount
+    {
+        get => _kpiOverdueCount;
+        private set => SetProperty(ref _kpiOverdueCount, value);
+    }
+
+    /// <summary>Niewykonane z terminem dzisiaj.</summary>
+    public int KpiDueTodayCount
+    {
+        get => _kpiDueTodayCount;
+        private set => SetProperty(ref _kpiDueTodayCount, value);
+    }
+
+    /// <summary>Niewykonane z priorytetem wysokim.</summary>
+    public int KpiHighPriorityOpenCount
+    {
+        get => _kpiHighPriorityOpenCount;
+        private set => SetProperty(ref _kpiHighPriorityOpenCount, value);
+    }
+
+    /// <summary>Niewykonane bez osoby przypisanej.</summary>
+    public int KpiUnassignedCount
+    {
+        get => _kpiUnassignedCount;
+        private set => SetProperty(ref _kpiUnassignedCount, value);
+    }
 
     public string StatusMessage
     {
@@ -244,6 +281,36 @@ public sealed class MainViewModel : ObservableObject
         RefreshCategoryFilterChoices();
         RefreshAssignedToFilterChoices();
         RefreshClientProjectFilterChoices();
+        RefreshKpis();
+    }
+
+    private void RefreshKpis()
+    {
+        var today = DateTime.Today;
+        var overdue = 0;
+        var dueToday = 0;
+        var highOpen = 0;
+        var unassigned = 0;
+
+        foreach (var t in Tasks)
+        {
+            if (t.IsCompleted)
+                continue;
+
+            if (t.DueDate.Date < today)
+                overdue++;
+            if (t.DueDate.Date == today)
+                dueToday++;
+            if (t.Priority == TaskPriority.High)
+                highOpen++;
+            if (string.IsNullOrWhiteSpace(t.AssignedTo))
+                unassigned++;
+        }
+
+        KpiOverdueCount = overdue;
+        KpiDueTodayCount = dueToday;
+        KpiHighPriorityOpenCount = highOpen;
+        KpiUnassignedCount = unassigned;
     }
 
     private void RefreshCategoryFilterChoices()
@@ -493,6 +560,8 @@ public sealed class MainViewModel : ObservableObject
         {
             ApplyTaskListFilters();
         }
+
+        RefreshKpis();
     }
 
     private void RefreshDetailValidation()
@@ -658,6 +727,7 @@ public sealed class MainViewModel : ObservableObject
         RefreshCategoryFilterChoices();
         RefreshAssignedToFilterChoices();
         RefreshClientProjectFilterChoices();
+        RefreshKpis();
         SelectedTask = Tasks.FirstOrDefault();
         RefreshDetailValidation();
         CommandManager.InvalidateRequerySuggested();

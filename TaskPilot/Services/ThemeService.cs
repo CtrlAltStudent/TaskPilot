@@ -19,7 +19,7 @@ public static class ThemeService
         return value is int intValue && intValue == 0;
     }
 
-    public static void ApplyTheme(Application application, ThemeMode mode)
+    public static void ApplyTheme(System.Windows.Application application, ThemeMode mode)
     {
         var isDark = mode == ThemeMode.Dark || (mode == ThemeMode.System && IsSystemDarkTheme());
         var target = isDark ? DarkThemeDictionary : LightThemeDictionary;

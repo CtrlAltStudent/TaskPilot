@@ -129,6 +129,74 @@
                                FontSize="14"
                                Foreground="{DynamicResource SectionTitleBrush}"
                                Margin="0,0,0,6" />
+                    <UniformGrid DockPanel.Dock="Top"
+                                 Rows="1"
+                                 Columns="4"
+                                 Margin="0,0,0,8">
+                        <Border Margin="0,0,6,0"
+                                Padding="8,6"
+                                CornerRadius="4"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource FooterBorderBrush}"
+                                Background="{DynamicResource AppBackgroundBrush}">
+                            <StackPanel>
+                                <TextBlock Text="Zaległe"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource SubtitleBrush}" />
+                                <TextBlock Text="{Binding KpiOverdueCount}"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SectionTitleBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Margin="0,0,6,0"
+                                Padding="8,6"
+                                CornerRadius="4"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource FooterBorderBrush}"
+                                Background="{DynamicResource AppBackgroundBrush}">
+                            <StackPanel>
+                                <TextBlock Text="Termin dziś"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource SubtitleBrush}" />
+                                <TextBlock Text="{Binding KpiDueTodayCount}"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SectionTitleBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Margin="0,0,6,0"
+                                Padding="8,6"
+                                CornerRadius="4"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource FooterBorderBrush}"
+                                Background="{DynamicResource AppBackgroundBrush}">
+                            <StackPanel>
+                                <TextBlock Text="Wysoki priorytet"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource SubtitleBrush}" />
+                                <TextBlock Text="{Binding KpiHighPriorityOpenCount}"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SectionTitleBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Padding="8,6"
+                                CornerRadius="4"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource FooterBorderBrush}"
+                                Background="{DynamicResource AppBackgroundBrush}">
+                            <StackPanel>
+                                <TextBlock Text="Bez przypisania"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource SubtitleBrush}" />
+                                <TextBlock Text="{Binding KpiUnassignedCount}"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SectionTitleBrush}" />
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
                     <StackPanel DockPanel.Dock="Top"
                                 Margin="0,0,0,6">
                         <TextBlock Foreground="{DynamicResource SubtitleBrush}"
