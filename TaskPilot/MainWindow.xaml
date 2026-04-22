@@ -32,7 +32,7 @@
                                FontSize="22"
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource TitleBrush}" />
-                    <TextBlock Text="Lista (DataGrid) + formularz edycji • zapis JSON • walidacja tytułu i terminu"
+                    <TextBlock Text="Lista (DataGrid) + formularz edycji • zapis JSON lub SQLite • walidacja tytułu i terminu"
                                FontSize="12"
                                Foreground="{DynamicResource SubtitleBrush}"
                                Margin="0,4,0,0" />

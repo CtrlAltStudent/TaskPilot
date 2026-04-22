@@ -14,7 +14,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        var persistence = new JsonTaskPersistence(TaskStoragePaths.DefaultFilePath);
+        var persistence = PersistenceResolver.CreateDefault();
         _viewModel = new MainViewModel(persistence);
         _viewModel.PropertyChanged += ViewModelOnPropertyChanged;
         DataContext = _viewModel;

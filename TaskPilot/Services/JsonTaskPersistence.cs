@@ -12,6 +12,8 @@ public sealed class JsonTaskPersistence : ITaskPersistence
         _filePath = filePath;
     }
 
+    public string StorageDescription => $"Plik JSON: {_filePath}";
+
     public IReadOnlyList<TaskItem> Load()
     {
         try

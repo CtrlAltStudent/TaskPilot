@@ -1,6 +1,6 @@
 # TaskPilot
 
-Desktopowa aplikacja **WPF** (.NET 8) — menedżer zadań zgodny z projektem zespołowym (MVVM, binding, komendy, zapis danych do pliku JSON).
+Desktopowa aplikacja **WPF** (.NET 8) — menedżer zadań zgodny z projektem zespołowym (MVVM, binding, komendy, zapis danych do **JSON** lub opcjonalnie do **SQLite**).
 
 ## Wymagania środowiska
 
@@ -45,6 +45,27 @@ dotnet run --project .\TaskPilot\TaskPilot.csproj
 
 Pierwsze uruchomienie może pobrać pakiety NuGet i potrwać dłużej.
 
+## Funkcje (skrót)
+
+- Lista zadań w **DataGrid** + formularz szczegółów (MVVM, `RelayCommand`).
+- **Filtry**: status, priorytet, kategoria, wyszukiwanie po tytule/opisie/kategorii.
+- **Sortowanie** po terminie lub tytule.
+- **Motyw**: jasny / ciemny / zgodny z systemem.
+- **Import / eksport** listy do pliku JSON (format wspólny z domyślnym zapisem).
+- **Walidacja** (m.in. pusty tytuł, termin w przeszłości dla zadań niewykonanych).
+- **Opcjonalny zapis w SQLite** (patrz niżej: zmienna środowiskowa `TASKPILOT_STORAGE`).
+
+## Jak przetestować (checklista ręczna)
+
+1. `dotnet build .\TaskPilot\TaskPilot.csproj -c Release` — kompilacja bez błędów.
+2. `dotnet run --project .\TaskPilot\TaskPilot.csproj -c Release` — aplikacja startuje.
+3. **Dodaj zadanie** — nowy wiersz pojawia się na liście, formularz się włącza, status wskazuje zapis.
+4. Edytuj tytuł na pusty i spróbuj **Zapisz teraz** — oczekiwane ostrzeżenie walidacji.
+5. **Filtry i sortowanie** — zmiana opcji od razu ogranicza/układa listę.
+6. **Usuń** — pojawia się potwierdzenie, po „Tak” wiersz znika i zapis odświeża dane.
+7. **Eksportuj… / Importuj…** — eksport do wybranego pliku, import zastępuje listę (po potwierdzeniu).
+8. Zamknij aplikację i uruchom ponownie — lista powinna wrócić z tego samego źródła (JSON lub SQLite, zależnie od trybu).
+
 ## Uruchomienie w Visual Studio
 
 1. **Plik → Otwórz → Folder** i wskaż folder sklonowanego repozytorium `TaskPilot` **lub** podfolder `TaskPilot` z plikiem `TaskPilot.csproj`.
@@ -52,6 +73,8 @@ Pierwsze uruchomienie może pobrać pakiety NuGet i potrwać dłużej.
 3. **F5** (debug) lub **Ctrl+F5** (bez debugera).
 
 ## Gdzie aplikacja zapisuje dane
+
+### Domyślnie: JSON
 
 Zadania są zapisywane w pliku JSON w profilu użytkownika Windows:
 
@@ -63,6 +86,21 @@ Pełna ścieżka przykładowo:
 
 Na innym komputerze plik powstaje automatycznie przy pierwszym zapisie. Katalog `TaskPilot` w `LocalAppData` tworzy się sam.
 
+### Opcjonalnie: SQLite
+
+Jeśli przed uruchomieniem ustawisz zmienną środowiskową **`TASKPILOT_STORAGE=sqlite`**, aplikacja użyje bazy:
+
+`%LocalAppData%\TaskPilot\tasks.db`
+
+Przykład w PowerShellu (tylko bieżące okno terminala):
+
+```powershell
+$env:TASKPILOT_STORAGE = "sqlite"
+dotnet run --project .\TaskPilot\TaskPilot.csproj
+```
+
+**Uwaga:** JSON i SQLite to **dwa niezależne magazyny** — przełączenie trybu nie migruje automatycznie danych z jednego do drugiego.
+
 ## Rozwiązywanie typowych problemów
 
 | Problem | Co zrobić |
@@ -71,6 +109,7 @@ Na innym komputerze plik powstaje automatycznie przy pierwszym zapisie. Katalog 
 | Błąd kompilacji `net8.0-windows` | Użyj **Windows** i SDK 8.x; na starszym SDK zainstaluj aktualizację. |
 | Aplikacja się nie uruchamia poza Windows | To normalne — projekt to **WPF** (tylko Windows). |
 | Pusty lub uszkodzony `tasks.json` | Przy błędnym JSON aplikacja pokaże ostrzeżenie i uruchomi się z pustą listą; możesz skasować plik, aby „zresetować” dane. |
+| Uszkodzona baza `tasks.db` (tryb SQLite) | Usuń plik `tasks.db` w `%LocalAppData%\TaskPilot\` albo wyłącz tryb SQLite, aby wrócić do JSON. |
 
 ## Struktura repozytorium (skrót)
 
@@ -82,7 +121,7 @@ TaskPilot/                 ← katalog główny Git (README, .gitignore)
     ├── MainWindow.xaml
     ├── Models/
     ├── ViewModels/
-    ├── Services/          ← m.in. zapis/odczyt JSON, walidacja
+    ├── Services/          ← m.in. zapis JSON/SQLite, walidacja
     └── Converters/
 ```
 

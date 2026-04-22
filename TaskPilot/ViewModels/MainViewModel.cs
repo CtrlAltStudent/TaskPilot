@@ -64,7 +64,7 @@ public sealed class MainViewModel : ObservableObject
         if (Tasks.Count == 0)
             StatusMessage = "Brak zadań — dodaj pierwsze lub wczytaj z pliku JSON.";
         else
-            StatusMessage = $"Wczytano {Tasks.Count} zadań. Plik: {TaskStoragePaths.DefaultFilePath}";
+            StatusMessage = $"Wczytano {Tasks.Count} zadań. {_persistence.StorageDescription}";
     }
 
     public ObservableCollection<TaskItem> Tasks { get; }
@@ -153,7 +153,11 @@ public sealed class MainViewModel : ObservableObject
         get => _categoryFilterSelection;
         set
         {
-            if (!SetProperty(ref _categoryFilterSelection, value))
+            var normalized = string.IsNullOrWhiteSpace(value)
+                ? CategoryFilterAll
+                : value.Trim();
+
+            if (!SetProperty(ref _categoryFilterSelection, normalized))
                 return;
 
             ApplyTaskListFilters();
@@ -250,17 +254,23 @@ public sealed class MainViewModel : ObservableObject
         };
 
         var needle = _searchText.Trim();
+        var title = task.Title ?? string.Empty;
+        var description = task.Description ?? string.Empty;
         var searchOk = needle.Length == 0
-                       || task.Title.Contains(needle, StringComparison.OrdinalIgnoreCase)
-                       || task.Description.Contains(needle, StringComparison.OrdinalIgnoreCase)
+                       || title.Contains(needle, StringComparison.OrdinalIgnoreCase)
+                       || description.Contains(needle, StringComparison.OrdinalIgnoreCase)
                        || (!string.IsNullOrEmpty(task.Category) &&
                            task.Category.Contains(needle, StringComparison.OrdinalIgnoreCase));
 
-        var categoryOk = _categoryFilterSelection switch
+        var categoryFilter = string.IsNullOrWhiteSpace(_categoryFilterSelection)
+            ? CategoryFilterAll
+            : _categoryFilterSelection.Trim();
+
+        var categoryOk = categoryFilter switch
         {
             CategoryFilterAll => true,
             CategoryFilterNone => string.IsNullOrWhiteSpace(task.Category),
-            _ => string.Equals((task.Category ?? string.Empty).Trim(), _categoryFilterSelection.Trim(),
+            _ => string.Equals((task.Category ?? string.Empty).Trim(), categoryFilter,
                 StringComparison.OrdinalIgnoreCase)
         };
 
@@ -386,7 +396,7 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             _persistence.Save(Tasks);
-            StatusMessage = $"Zapisano {Tasks.Count} zadań. {TaskStoragePaths.DefaultFilePath}";
+            StatusMessage = $"Zapisano {Tasks.Count} zadań. {_persistence.StorageDescription}";
         }
         catch (Exception ex)
         {
@@ -451,7 +461,8 @@ public sealed class MainViewModel : ObservableObject
     {
         var confirm = MessageBox.Show(
             "Lista zadań z pliku zastąpi bieżącą zawartość aplikacji.\n\n" +
-            "Po imporcie zapis domyślny (%LocalAppData%\\TaskPilot\\tasks.json) zostanie zaktualizowany przy kolejnej próbie zapisu (np. edycja lub „Zapisz teraz”).\n\nKontynuować?",
+            "Po imporcie zapis zostanie zaktualizowany przy kolejnej próbie zapisu (np. edycja lub „Zapisz teraz”).\n\n" +
+            $"Źródło zapisu: {_persistence.StorageDescription}\n\nKontynuować?",
             "TaskPilot — import z pliku",
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
