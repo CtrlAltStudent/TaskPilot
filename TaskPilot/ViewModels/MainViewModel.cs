@@ -16,6 +16,10 @@ public sealed class MainViewModel : ObservableObject
 {
     private const string CategoryFilterAll = "Wszystkie";
     private const string CategoryFilterNone = "Bez kategorii";
+    private const string AssignedToFilterAll = "Wszyscy";
+    private const string AssignedToFilterNone = "Bez przypisania";
+    private const string ClientProjectFilterAll = "Wszystkie";
+    private const string ClientProjectFilterNone = "Bez projektu";
 
     private readonly ITaskPersistence _persistence;
     private readonly CollectionViewSource _tasksViewSource;
@@ -29,6 +33,8 @@ public sealed class MainViewModel : ObservableObject
     private TaskSortOption _sortOption = TaskSortOption.DueDateAscending;
     private string _searchText = string.Empty;
     private string _categoryFilterSelection = CategoryFilterAll;
+    private string _assignedToFilterSelection = AssignedToFilterAll;
+    private string _clientProjectFilterSelection = ClientProjectFilterAll;
 
     public MainViewModel(ITaskPersistence persistence)
     {
@@ -36,10 +42,7 @@ public sealed class MainViewModel : ObservableObject
         Tasks = new ObservableCollection<TaskItem>();
 
         foreach (var item in _persistence.Load())
-        {
             Tasks.Add(item);
-            AttachTask(item);
-        }
 
         _nextId = Tasks.Count == 0 ? 1 : Tasks.Max(t => t.Id) + 1;
 
@@ -51,6 +54,8 @@ public sealed class MainViewModel : ObservableObject
         ApplySortDescriptions();
         EnableLiveSorting();
         RefreshCategoryFilterChoices();
+        RefreshAssignedToFilterChoices();
+        RefreshClientProjectFilterChoices();
 
         AddTaskCommand = new RelayCommand(AddTask);
         DeleteTaskCommand = new RelayCommand(DeleteTask, () => SelectedTask != null);
@@ -78,6 +83,8 @@ public sealed class MainViewModel : ObservableObject
     public IReadOnlyList<TaskSortOption> SortOptions { get; } = Enum.GetValues<TaskSortOption>().ToList();
 
     public ObservableCollection<string> CategoryFilterChoices { get; } = new();
+    public ObservableCollection<string> AssignedToFilterChoices { get; } = new();
+    public ObservableCollection<string> ClientProjectFilterChoices { get; } = new();
 
     public string StatusMessage
     {
@@ -164,6 +171,38 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    public string SelectedAssignedToFilter
+    {
+        get => _assignedToFilterSelection;
+        set
+        {
+            var normalized = string.IsNullOrWhiteSpace(value)
+                ? AssignedToFilterAll
+                : value.Trim();
+
+            if (!SetProperty(ref _assignedToFilterSelection, normalized))
+                return;
+
+            ApplyTaskListFilters();
+        }
+    }
+
+    public string SelectedClientProjectFilter
+    {
+        get => _clientProjectFilterSelection;
+        set
+        {
+            var normalized = string.IsNullOrWhiteSpace(value)
+                ? ClientProjectFilterAll
+                : value.Trim();
+
+            if (!SetProperty(ref _clientProjectFilterSelection, normalized))
+                return;
+
+            ApplyTaskListFilters();
+        }
+    }
+
     public TaskItem? SelectedTask
     {
         get => _selectedTask;
@@ -203,6 +242,8 @@ public sealed class MainViewModel : ObservableObject
 
         TryPersist(silent: true);
         RefreshCategoryFilterChoices();
+        RefreshAssignedToFilterChoices();
+        RefreshClientProjectFilterChoices();
     }
 
     private void RefreshCategoryFilterChoices()
@@ -223,6 +264,52 @@ public sealed class MainViewModel : ObservableObject
         {
             _categoryFilterSelection = CategoryFilterAll;
             OnPropertyChanged(nameof(SelectedCategoryFilter));
+        }
+
+        ApplyTaskListFilters();
+    }
+
+    private void RefreshAssignedToFilterChoices()
+    {
+        var prev = _assignedToFilterSelection;
+        AssignedToFilterChoices.Clear();
+        AssignedToFilterChoices.Add(AssignedToFilterAll);
+        AssignedToFilterChoices.Add(AssignedToFilterNone);
+        foreach (var name in Tasks
+                     .Select(t => (t.AssignedTo ?? string.Empty).Trim())
+                     .Where(s => s.Length > 0)
+                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
+            AssignedToFilterChoices.Add(name);
+
+        var stillValid = AssignedToFilterChoices.Any(x => string.Equals(x, prev, StringComparison.Ordinal));
+        if (!stillValid)
+        {
+            _assignedToFilterSelection = AssignedToFilterAll;
+            OnPropertyChanged(nameof(SelectedAssignedToFilter));
+        }
+
+        ApplyTaskListFilters();
+    }
+
+    private void RefreshClientProjectFilterChoices()
+    {
+        var prev = _clientProjectFilterSelection;
+        ClientProjectFilterChoices.Clear();
+        ClientProjectFilterChoices.Add(ClientProjectFilterAll);
+        ClientProjectFilterChoices.Add(ClientProjectFilterNone);
+        foreach (var name in Tasks
+                     .Select(t => (t.ClientProject ?? string.Empty).Trim())
+                     .Where(s => s.Length > 0)
+                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
+            ClientProjectFilterChoices.Add(name);
+
+        var stillValid = ClientProjectFilterChoices.Any(x => string.Equals(x, prev, StringComparison.Ordinal));
+        if (!stillValid)
+        {
+            _clientProjectFilterSelection = ClientProjectFilterAll;
+            OnPropertyChanged(nameof(SelectedClientProjectFilter));
         }
 
         ApplyTaskListFilters();
@@ -256,11 +343,15 @@ public sealed class MainViewModel : ObservableObject
         var needle = _searchText.Trim();
         var title = task.Title ?? string.Empty;
         var description = task.Description ?? string.Empty;
+        var assign = task.AssignedTo ?? string.Empty;
+        var client = task.ClientProject ?? string.Empty;
         var searchOk = needle.Length == 0
                        || title.Contains(needle, StringComparison.OrdinalIgnoreCase)
                        || description.Contains(needle, StringComparison.OrdinalIgnoreCase)
                        || (!string.IsNullOrEmpty(task.Category) &&
-                           task.Category.Contains(needle, StringComparison.OrdinalIgnoreCase));
+                           task.Category.Contains(needle, StringComparison.OrdinalIgnoreCase))
+                       || assign.Contains(needle, StringComparison.OrdinalIgnoreCase)
+                       || client.Contains(needle, StringComparison.OrdinalIgnoreCase);
 
         var categoryFilter = string.IsNullOrWhiteSpace(_categoryFilterSelection)
             ? CategoryFilterAll
@@ -274,7 +365,29 @@ public sealed class MainViewModel : ObservableObject
                 StringComparison.OrdinalIgnoreCase)
         };
 
-        e.Accepted = statusOk && priorityOk && searchOk && categoryOk;
+        var assignFilter = string.IsNullOrWhiteSpace(_assignedToFilterSelection)
+            ? AssignedToFilterAll
+            : _assignedToFilterSelection.Trim();
+
+        var assignOk = assignFilter switch
+        {
+            AssignedToFilterAll => true,
+            AssignedToFilterNone => string.IsNullOrWhiteSpace(assign),
+            _ => string.Equals(assign.Trim(), assignFilter, StringComparison.OrdinalIgnoreCase)
+        };
+
+        var clientFilter = string.IsNullOrWhiteSpace(_clientProjectFilterSelection)
+            ? ClientProjectFilterAll
+            : _clientProjectFilterSelection.Trim();
+
+        var clientOk = clientFilter switch
+        {
+            ClientProjectFilterAll => true,
+            ClientProjectFilterNone => string.IsNullOrWhiteSpace(client),
+            _ => string.Equals(client.Trim(), clientFilter, StringComparison.OrdinalIgnoreCase)
+        };
+
+        e.Accepted = statusOk && priorityOk && searchOk && categoryOk && assignOk && clientOk;
     }
 
     private void ApplyTaskListFilters()
@@ -316,6 +429,8 @@ public sealed class MainViewModel : ObservableObject
         list.LiveSortingProperties.Clear();
         list.LiveSortingProperties.Add(nameof(TaskItem.DueDate));
         list.LiveSortingProperties.Add(nameof(TaskItem.Title));
+        list.LiveSortingProperties.Add(nameof(TaskItem.AssignedTo));
+        list.LiveSortingProperties.Add(nameof(TaskItem.ClientProject));
     }
 
     private void SyncSelectionAfterFilter()
@@ -349,7 +464,13 @@ public sealed class MainViewModel : ObservableObject
 
     private void OnTaskPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender == SelectedTask)
+        if (sender is not TaskItem task)
+            return;
+
+        if (e.PropertyName != nameof(TaskItem.UpdatedUtc))
+            task.UpdatedUtc = DateTime.UtcNow;
+
+        if (ReferenceEquals(sender, SelectedTask))
             RefreshDetailValidation();
 
         TryPersist(silent: true);
@@ -362,6 +483,11 @@ public sealed class MainViewModel : ObservableObject
         else if (e.PropertyName == nameof(TaskItem.Category))
         {
             RefreshCategoryFilterChoices();
+        }
+        else if (e.PropertyName is nameof(TaskItem.AssignedTo) or nameof(TaskItem.ClientProject))
+        {
+            RefreshAssignedToFilterChoices();
+            RefreshClientProjectFilterChoices();
         }
         else if (e.PropertyName is nameof(TaskItem.Priority) or nameof(TaskItem.Title) or nameof(TaskItem.Description))
         {
@@ -525,9 +651,13 @@ public sealed class MainViewModel : ObservableObject
         SelectedStatusFilter = TaskStatusFilter.All;
         SelectedPriorityFilter = TaskPriorityFilterOption.All;
         SelectedCategoryFilter = CategoryFilterAll;
+        SelectedAssignedToFilter = AssignedToFilterAll;
+        SelectedClientProjectFilter = ClientProjectFilterAll;
         SearchText = string.Empty;
 
         RefreshCategoryFilterChoices();
+        RefreshAssignedToFilterChoices();
+        RefreshClientProjectFilterChoices();
         SelectedTask = Tasks.FirstOrDefault();
         RefreshDetailValidation();
         CommandManager.InvalidateRequerySuggested();

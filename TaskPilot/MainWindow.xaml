@@ -6,9 +6,9 @@
         mc:Ignorable="d"
         Title="TaskPilot — menedżer zadań"
         Height="560"
-        Width="960"
+        Width="1080"
         MinHeight="420"
-        MinWidth="720"
+        MinWidth="800"
         Background="{DynamicResource AppBackgroundBrush}">
     <DockPanel Margin="16">
         <Border DockPanel.Dock="Top"
@@ -32,7 +32,7 @@
                                FontSize="22"
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource TitleBrush}" />
-                    <TextBlock Text="Lista (DataGrid) + formularz edycji • zapis JSON lub SQLite • walidacja tytułu i terminu"
+                    <TextBlock Text="Lista + formularz • przypisanie i projekt • zapis JSON lub SQLite • walidacja"
                                FontSize="12"
                                Foreground="{DynamicResource SubtitleBrush}"
                                Margin="0,4,0,0" />
@@ -109,7 +109,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MinWidth="280" />
                 <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="360" MinWidth="300" />
+                <ColumnDefinition Width="400" MinWidth="320" />
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0"
@@ -132,7 +132,7 @@
                     <StackPanel DockPanel.Dock="Top"
                                 Margin="0,0,0,6">
                         <TextBlock Foreground="{DynamicResource SubtitleBrush}"
-                                   Text="Szukaj (tytuł lub opis):" />
+                                   Text="Szukaj (tytuł, opis, przypisanie, projekt):" />
                         <TextBox Margin="0,4,0,0"
                                  Padding="8,6"
                                  MaxLength="200"
@@ -188,6 +188,30 @@
                     </StackPanel>
                     <StackPanel DockPanel.Dock="Top"
                                 Orientation="Horizontal"
+                                Margin="0,0,0,6">
+                        <TextBlock VerticalAlignment="Center"
+                                   Margin="0,0,8,0"
+                                   Foreground="{DynamicResource SubtitleBrush}"
+                                   Text="Filtr przypisania:" />
+                        <ComboBox MinWidth="160"
+                                  Padding="6,4"
+                                  ItemsSource="{Binding AssignedToFilterChoices}"
+                                  SelectedItem="{Binding SelectedAssignedToFilter}" />
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Top"
+                                Orientation="Horizontal"
+                                Margin="0,0,0,6">
+                        <TextBlock VerticalAlignment="Center"
+                                   Margin="0,0,8,0"
+                                   Foreground="{DynamicResource SubtitleBrush}"
+                                   Text="Filtr klient/projekt:" />
+                        <ComboBox MinWidth="160"
+                                  Padding="6,4"
+                                  ItemsSource="{Binding ClientProjectFilterChoices}"
+                                  SelectedItem="{Binding SelectedClientProjectFilter}" />
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Top"
+                                Orientation="Horizontal"
                                 Margin="0,0,0,10">
                         <TextBlock VerticalAlignment="Center"
                                    Margin="0,0,8,0"
@@ -231,7 +255,15 @@
                                                 IsReadOnly="True" />
                             <DataGridTextColumn Header="Kategoria"
                                                 Binding="{Binding Category}"
+                                                Width="90"
+                                                IsReadOnly="True" />
+                            <DataGridTextColumn Header="Przypisane"
+                                                Binding="{Binding AssignedTo}"
                                                 Width="100"
+                                                IsReadOnly="True" />
+                            <DataGridTextColumn Header="Klient/projekt"
+                                                Binding="{Binding ClientProject}"
+                                                Width="110"
                                                 IsReadOnly="True" />
                             <DataGridTextColumn Header="Termin"
                                                 Binding="{Binding DueDate, StringFormat=dd.MM.yyyy}"
@@ -290,6 +322,8 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="120" />
@@ -335,21 +369,47 @@
                                      ToolTip="Dowolna etykieta, np. Praca, Dom. Puste = bez kategorii." />
 
                             <TextBlock Grid.Row="3"
+                                       Text="Przypisane do"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,12,10"
+                                       Foreground="{DynamicResource LabelBrush}" />
+                            <TextBox Grid.Row="3"
+                                     Grid.Column="1"
+                                     Text="{Binding AssignedTo, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,10"
+                                     Padding="8,6"
+                                     MaxLength="120"
+                                     ToolTip="Osoba odpowiedzialna (np. inicjały lub e-mail). Puste = nie przypisano." />
+
+                            <TextBlock Grid.Row="4"
+                                       Text="Klient / projekt"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,12,10"
+                                       Foreground="{DynamicResource LabelBrush}" />
+                            <TextBox Grid.Row="4"
+                                     Grid.Column="1"
+                                     Text="{Binding ClientProject, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,10"
+                                     Padding="8,6"
+                                     MaxLength="120"
+                                     ToolTip="Kontekst pracy: klient, projekt lub kosztownik." />
+
+                            <TextBlock Grid.Row="5"
                                        Text="Termin"
                                        VerticalAlignment="Center"
                                        Margin="0,0,12,10"
                                        Foreground="{DynamicResource LabelBrush}" />
-                            <DatePicker Grid.Row="3"
+                            <DatePicker Grid.Row="5"
                                         Grid.Column="1"
                                         SelectedDate="{Binding DueDate, Mode=TwoWay}"
                                         Margin="0,0,0,10" />
 
-                            <TextBlock Grid.Row="4"
+                            <TextBlock Grid.Row="6"
                                        Text="Priorytet"
                                        VerticalAlignment="Center"
                                        Margin="0,0,12,10"
                                        Foreground="{DynamicResource LabelBrush}" />
-                            <ComboBox Grid.Row="4"
+                            <ComboBox Grid.Row="6"
                                       Grid.Column="1"
                                       ItemsSource="{Binding DataContext.PriorityOptions, RelativeSource={RelativeSource AncestorType=Window}}"
                                       SelectedItem="{Binding Priority}"
@@ -362,23 +422,23 @@
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
 
-                            <TextBlock Grid.Row="5"
+                            <TextBlock Grid.Row="7"
                                        Text="Status"
                                        VerticalAlignment="Center"
                                        Margin="0,0,12,10"
                                        Foreground="{DynamicResource LabelBrush}" />
-                            <CheckBox Grid.Row="5"
+                            <CheckBox Grid.Row="7"
                                       Grid.Column="1"
                                       Content="Wykonane"
                                       IsChecked="{Binding IsCompleted}"
                                       VerticalAlignment="Center"
                                       Margin="0,0,0,10" />
 
-                            <TextBlock Grid.Row="6"
+                            <TextBlock Grid.Row="8"
                                        Text="Identyfikator"
                                        VerticalAlignment="Center"
                                        Foreground="{DynamicResource LabelBrush}" />
-                            <TextBlock Grid.Row="6"
+                            <TextBlock Grid.Row="8"
                                        Grid.Column="1"
                                        Text="{Binding Id}"
                                        VerticalAlignment="Center"
