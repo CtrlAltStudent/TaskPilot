@@ -38,6 +38,7 @@ public sealed class MainViewModel : ObservableObject
     private string _categoryFilterSelection = CategoryFilterAll;
     private string _assignedToFilterSelection = AssignedToFilterAll;
     private string _clientProjectFilterSelection = ClientProjectFilterAll;
+    private TaskTemplateDefinition? _selectedTaskTemplate;
     private int _kpiOverdueCount;
     private int _kpiDueTodayCount;
     private int _kpiHighPriorityOpenCount;
@@ -64,7 +65,10 @@ public sealed class MainViewModel : ObservableObject
         RefreshAssignedToFilterChoices();
         RefreshClientProjectFilterChoices();
 
+        SelectedTaskTemplate = TaskTemplateCatalog.All[0];
+
         AddTaskCommand = new RelayCommand(AddTask);
+        CreateFromTemplateCommand = new RelayCommand(CreateFromTemplate, () => SelectedTaskTemplate is not null);
         DeleteTaskCommand = new RelayCommand(DeleteTask, () => SelectedTask != null);
         MarkCompleteCommand = new RelayCommand(MarkComplete, () => SelectedTask is { IsCompleted: false });
         SaveNowCommand = new RelayCommand(SaveNow);
@@ -90,6 +94,20 @@ public sealed class MainViewModel : ObservableObject
     public IReadOnlyList<TaskStatusFilter> StatusFilterOptions { get; } = Enum.GetValues<TaskStatusFilter>().ToList();
     public IReadOnlyList<TaskPriorityFilterOption> PriorityFilterOptions { get; } = Enum.GetValues<TaskPriorityFilterOption>().ToList();
     public IReadOnlyList<TaskSortOption> SortOptions { get; } = Enum.GetValues<TaskSortOption>().ToList();
+
+    public IReadOnlyList<TaskTemplateDefinition> TaskTemplates { get; } = TaskTemplateCatalog.All;
+
+    public TaskTemplateDefinition? SelectedTaskTemplate
+    {
+        get => _selectedTaskTemplate;
+        set
+        {
+            if (!SetProperty(ref _selectedTaskTemplate, value))
+                return;
+
+            CommandManager.InvalidateRequerySuggested();
+        }
+    }
 
     public ObservableCollection<string> CategoryFilterChoices { get; } = new();
     public ObservableCollection<string> AssignedToFilterChoices { get; } = new();
@@ -257,6 +275,7 @@ public sealed class MainViewModel : ObservableObject
     public bool IsTaskSelected => SelectedTask != null;
 
     public ICommand AddTaskCommand { get; }
+    public ICommand CreateFromTemplateCommand { get; }
     public ICommand DeleteTaskCommand { get; }
     public ICommand MarkCompleteCommand { get; }
     public ICommand SaveNowCommand { get; }
@@ -756,6 +775,34 @@ public sealed class MainViewModel : ObservableObject
         Tasks.Add(task);
         SelectedTask = task;
         ApplyTaskListFilters();
+    }
+
+    private void CreateFromTemplate()
+    {
+        if (SelectedTaskTemplate is null)
+            return;
+
+        var tpl = SelectedTaskTemplate;
+        var nowUtc = DateTime.UtcNow;
+        var task = new TaskItem
+        {
+            Id = _nextId++,
+            Title = tpl.Title,
+            Description = tpl.Description,
+            Category = tpl.Category,
+            DueDate = DateTime.Today.AddDays(tpl.DueInDays),
+            Priority = tpl.Priority,
+            IsCompleted = false,
+            AssignedTo = tpl.AssignedTo,
+            ClientProject = tpl.ClientProject,
+            CreatedUtc = nowUtc,
+            UpdatedUtc = nowUtc
+        };
+
+        Tasks.Add(task);
+        SelectedTask = task;
+        ApplyTaskListFilters();
+        StatusMessage = $"Dodano zadanie z szablonu „{tpl.DisplayName}”.";
     }
 
     private void DeleteTask()

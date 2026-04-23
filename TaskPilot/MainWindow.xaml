@@ -55,6 +55,21 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
+                    <TextBlock VerticalAlignment="Center"
+                               Margin="0,0,6,0"
+                               Foreground="{DynamicResource SubtitleBrush}"
+                               Text="Szablon:" />
+                    <ComboBox Width="200"
+                              Margin="0,0,6,0"
+                              Padding="6,4"
+                              DisplayMemberPath="DisplayName"
+                              ItemsSource="{Binding TaskTemplates}"
+                              SelectedItem="{Binding SelectedTaskTemplate}" />
+                    <Button Content="Z szablonu"
+                            Style="{StaticResource TaskPilotButtonStyle}"
+                            Command="{Binding CreateFromTemplateCommand}"
+                            MinWidth="100"
+                            Margin="0,0,8,0" />
                     <Button Content="Dodaj zadanie"
                             Style="{StaticResource TaskPilotButtonStyle}"
                             Command="{Binding AddTaskCommand}"
