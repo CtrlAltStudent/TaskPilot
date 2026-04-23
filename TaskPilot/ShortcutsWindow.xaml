@@ -1,0 +1,40 @@
+<Window x:Class="TaskPilot.ShortcutsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Skróty klawiszowe — TaskPilot"
+        Width="520"
+        SizeToContent="Height"
+        MinHeight="260"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{DynamicResource AppBackgroundBrush}">
+    <Border Padding="20"
+            Margin="0"
+            CornerRadius="0">
+        <StackPanel>
+            <TextBlock Text="Skróty globalne (gdy aktywne jest główne okno)"
+                       FontWeight="SemiBold"
+                       FontSize="14"
+                       Foreground="{DynamicResource SectionTitleBrush}"
+                       Margin="0,0,0,12" />
+            <TextBlock FontSize="13"
+                       Foreground="{DynamicResource LabelBrush}"
+                       TextWrapping="Wrap"
+                       LineHeight="22"
+                       xml:space="preserve">Ctrl+N — nowe zadanie (jak „Dodaj zadanie”)
+Ctrl+S — zapisz teraz
+Ctrl+F — fokus pola „Szukaj”
+Ctrl+E — eksport listy do pliku JSON
+Ctrl+I — import listy z pliku JSON
+F1 — to okno (lista skrótów)
+
+Minimalizacja okna ukrywa je do zasobnika systemowego — przywróć przez ikonę lub podwójne kliknięcie.</TextBlock>
+            <Button Content="Zamknij"
+                    Margin="0,16,0,0"
+                    Padding="16,8"
+                    HorizontalAlignment="Right"
+                    IsCancel="True"
+                    Click="CloseButton_Click" />
+        </StackPanel>
+    </Border>
+</Window>

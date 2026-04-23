@@ -4,12 +4,27 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
+        PreviewKeyDown="MainWindow_OnPreviewKeyDown"
         Title="TaskPilot — menedżer zadań"
         Height="560"
         Width="1080"
         MinHeight="420"
         MinWidth="800"
         Background="{DynamicResource AppBackgroundBrush}">
+    <Window.InputBindings>
+        <KeyBinding Key="N"
+                    Modifiers="Control"
+                    Command="{Binding AddTaskCommand}" />
+        <KeyBinding Key="S"
+                    Modifiers="Control"
+                    Command="{Binding SaveNowCommand}" />
+        <KeyBinding Key="E"
+                    Modifiers="Control"
+                    Command="{Binding ExportTasksCommand}" />
+        <KeyBinding Key="I"
+                    Modifiers="Control"
+                    Command="{Binding ImportTasksCommand}" />
+    </Window.InputBindings>
     <DockPanel Margin="16">
         <Border DockPanel.Dock="Top"
                 Padding="12,10"
@@ -97,6 +112,11 @@
                             Command="{Binding ImportTasksCommand}"
                             Margin="0"
                             MinWidth="100" />
+                    <Button Content="Skróty (F1)"
+                            Style="{StaticResource TaskPilotButtonStyle}"
+                            Click="ShowShortcutsHelp_Click"
+                            MinWidth="100"
+                            Margin="8,0,0,0" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -216,7 +236,8 @@
                                 Margin="0,0,0,6">
                         <TextBlock Foreground="{DynamicResource SubtitleBrush}"
                                    Text="Szukaj (tytuł, opis, przypisanie, projekt):" />
-                        <TextBox Margin="0,4,0,0"
+                        <TextBox x:Name="SearchTextBox"
+                                 Margin="0,4,0,0"
                                  Padding="8,6"
                                  MaxLength="200"
                                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
