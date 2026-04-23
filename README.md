@@ -48,12 +48,22 @@ Pierwsze uruchomienie może pobrać pakiety NuGet i potrwać dłużej.
 ## Funkcje (skrót)
 
 - Lista zadań w **DataGrid** + formularz szczegółów (MVVM, `RelayCommand`).
-- **Filtry**: status, priorytet, kategoria, wyszukiwanie po tytule/opisie/kategorii.
+- **Filtry**: status, priorytet, kategoria, przypisanie, klient/projekt, wyszukiwanie po tekście.
 - **Sortowanie** po terminie lub tytule.
 - **Motyw**: jasny / ciemny / zgodny z systemem.
+- **KPI** nad listą: zaległe, termin dziś, otwarte wysokie, bez przypisania.
+- **Szablony zadań** (np. incydent IT, wdrożenie, spotkanie z klientem) — szybkie wypełnienie pól.
+- **Zasobnik systemowy** po minimalizacji okna; menu ikony (m.in. liczba zadań na dziś).
+- **Skróty klawiszowe** (Ctrl+N/S/E/I, Ctrl+F, F1) — szczegóły w oknie „Skróty (F1)”.
 - **Import / eksport** listy do pliku JSON (format wspólny z domyślnym zapisem).
 - **Walidacja** (m.in. pusty tytuł, termin w przeszłości dla zadań niewykonanych).
 - **Opcjonalny zapis w SQLite** (patrz niżej: zmienna środowiskowa `TASKPILOT_STORAGE`).
+
+## Interfejs (UX)
+
+- Delikatna **animacja wejścia** głównych kart (nagłówek, lista, formularz) przy starcie.
+- **Podświetlenie wiersza** DataGrid przy najechaniu myszą (z zachowaniem koloru „zaległe”).
+- **Ikona** aplikacji w pasku tytułu i w pliku `.exe` (`Assets/TaskPilot.ico` — domyślnie uproszczona ikona systemowa; możesz podmienić plik na własną grafikę w tym samym formacie).
 
 ## Jak przetestować (checklista ręczna)
 
@@ -64,7 +74,11 @@ Pierwsze uruchomienie może pobrać pakiety NuGet i potrwać dłużej.
 5. **Filtry i sortowanie** — zmiana opcji od razu ogranicza/układa listę.
 6. **Usuń** — pojawia się potwierdzenie, po „Tak” wiersz znika i zapis odświeża dane.
 7. **Eksportuj… / Importuj…** — eksport do wybranego pliku, import zastępuje listę (po potwierdzeniu).
-8. Zamknij aplikację i uruchom ponownie — lista powinna wrócić z tego samego źródła (JSON lub SQLite, zależnie od trybu).
+8. **Szablony** — wybór szablonu i „Z szablonu”; sprawdź, czy pola i termin są sensowne.
+9. **KPI** — po dodaniu/edycji zadań liczniki się aktualizują.
+10. **Minimalizacja** — okno znika z paska zadań; przywróć z zasobnika (Pokaż / dwuklik).
+11. **F1** — otwiera listę skrótów.
+12. Zamknij aplikację i uruchom ponownie — lista powinna wrócić z tego samego źródła (JSON lub SQLite, zależnie od trybu).
 
 ## Uruchomienie w Visual Studio
 
@@ -119,9 +133,11 @@ TaskPilot/                 ← katalog główny Git (README, .gitignore)
     ├── TaskPilot.csproj
     ├── App.xaml
     ├── MainWindow.xaml
+    ├── Assets/            ← ikona aplikacji (TaskPilot.ico)
     ├── Models/
     ├── ViewModels/
     ├── Services/          ← m.in. zapis JSON/SQLite, walidacja
+    ├── Themes/            ← motywy + Animations.xaml
     └── Converters/
 ```
 

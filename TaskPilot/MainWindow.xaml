@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         PreviewKeyDown="MainWindow_OnPreviewKeyDown"
+        Icon="pack://application:,,,/TaskPilot;component/Assets/TaskPilot.ico"
         Title="TaskPilot — menedżer zadań"
         Height="560"
         Width="1080"
@@ -27,6 +28,7 @@
     </Window.InputBindings>
     <DockPanel Margin="16">
         <Border DockPanel.Dock="Top"
+                Style="{StaticResource CardEntranceStyle}"
                 Padding="12,10"
                 Margin="0,0,0,12"
                 Background="{DynamicResource CardBackgroundBrush}"
@@ -148,6 +150,7 @@
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0"
+                    Style="{StaticResource CardEntranceStyle}"
                     Background="{DynamicResource CardBackgroundBrush}"
                     CornerRadius="6"
                     Padding="12">
@@ -345,6 +348,9 @@
                         <DataGrid.RowStyle>
                             <Style TargetType="DataGridRow">
                                 <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource DataGridRowHoverBrush}" />
+                                    </Trigger>
                                     <DataTrigger Binding="{Binding Converter={StaticResource TaskOverdueConverter}}"
                                                  Value="True">
                                         <Setter Property="Background" Value="{DynamicResource OverdueRowBrush}" />
@@ -393,6 +399,7 @@
             </Border>
 
             <Border Grid.Column="2"
+                    Style="{StaticResource CardEntranceStyle}"
                     Background="{DynamicResource CardBackgroundBrush}"
                     CornerRadius="6"
                     Padding="16">

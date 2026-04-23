@@ -24,6 +24,7 @@
     <SolidColorBrush x:Key="ErrorBrush" Color="#F87171" />
     <SolidColorBrush x:Key="FooterBorderBrush" Color="#334155" />
     <SolidColorBrush x:Key="OverdueRowBrush" Color="#3F1D1D" />
+    <SolidColorBrush x:Key="DataGridRowHoverBrush" Color="#334155" />
     <SolidColorBrush x:Key="InputBackgroundBrush" Color="#0F172A" />
     <SolidColorBrush x:Key="InputForegroundBrush" Color="#E2E8F0" />
     <SolidColorBrush x:Key="ControlBorderBrush" Color="#475569" />
